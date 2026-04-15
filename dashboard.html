@@ -203,6 +203,10 @@ canvas{max-height:220px}
     <div class="tb-search"><input type="text" placeholder="Search products…" oninput="searchProducts(this.value)"></div>
     <button class="btn" onclick="openModal('add-product-modal')">+ Add Product</button>
     <button class="btn primary" id="topbar-scrape" onclick="runScrape()">▶ Run Scrape</button>
+    <div id="live-indicator" title="Auto-scrape — click to configure" style="display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--text-3);cursor:pointer;padding:6px 10px;border-radius:8px;border:1.5px solid var(--border);transition:all .15s" onclick="nav('scraping',document.querySelectorAll('.sb-item')[11])">
+      <div id="live-dot" style="width:8px;height:8px;border-radius:50%;background:var(--text-3);transition:background .3s"></div>
+      <span id="live-label">Manual</span>
+    </div>
     <div class="notif-btn" id="notif-btn" title="Alerts" onclick="nav('alerts',document.querySelectorAll('.sb-item')[4])">🔔<div class="notif-dot" id="notif-dot" style="display:none"></div></div>
   </div>
 
@@ -301,14 +305,43 @@ canvas{max-height:220px}
   <div class="page" id="page-scraping">
     <div class="sec-head">
       <div><div class="sec-title">Scraping</div><div class="sec-sub">Python scraper → scraped_data.json → dashboard</div></div>
-      <button class="btn primary" onclick="runScrape()">▶ Reload JSON</button>
+      <div class="sec-actions">
+        <button class="btn" onclick="schedulerRunNow()">▶ Run Now</button>
+        <button class="btn primary" onclick="runScrape()">⟳ Reload Data</button>
+      </div>
     </div>
+
+    <!-- Live scheduler controls -->
+    <div class="tbl-wrap" style="padding:18px 20px">
+      <div style="font-size:13px;font-weight:800;color:var(--text-1);margin-bottom:14px">⚡ Auto-Scrape Scheduler</div>
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:12.5px;color:var(--text-2);font-weight:600">Interval:</span>
+          <select class="form-input" id="scheduler-interval" style="width:auto;font-size:12.5px;padding:6px 10px">
+            <option value="5">Every 5 min</option>
+            <option value="10">Every 10 min</option>
+            <option value="15" selected>Every 15 min</option>
+            <option value="30">Every 30 min</option>
+            <option value="60">Every 1 hour</option>
+            <option value="360">Every 6 hours</option>
+          </select>
+        </div>
+        <button class="btn primary" id="scheduler-toggle-btn" onclick="toggleScheduler()">▶ Start Auto-Scrape</button>
+        <div id="scheduler-status-badge" class="badge b-gray">Stopped</div>
+        <div id="scheduler-next" style="font-size:12px;color:var(--text-3)"></div>
+      </div>
+      <div id="scheduler-live-log" style="margin-top:14px;display:none">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-3);margin-bottom:6px">Live Activity</div>
+        <div id="scheduler-log-items" style="font-family:monospace;font-size:11.5px;color:var(--text-2);max-height:120px;overflow-y:auto;background:var(--surface-2);border-radius:8px;padding:10px 12px;line-height:1.7"></div>
+      </div>
+    </div>
+
     <div style="background:var(--blue-soft);border:1.5px solid var(--blue-border);border-radius:10px;padding:14px 18px;margin-bottom:4px">
       <div style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:6px">🚀 How to use PriceIQ</div>
       <div style="font-size:12.5px;color:var(--text-2);line-height:1.9">
         <strong>1.</strong> Start the server: <code style="background:var(--surface-3);padding:1px 6px;border-radius:4px;font-family:monospace">npm install</code> then <code style="background:var(--surface-3);padding:1px 6px;border-radius:4px;font-family:monospace">node server.js</code><br>
         <strong>2.</strong> Click <strong>+ Add Product</strong> in the topbar, enter an ASIN, choose competitor mode, and click <strong>▶ Scrape Now</strong><br>
-        <strong>3.</strong> Watch the live log — dashboard auto-refreshes when done<br>
+        <strong>3.</strong> Enable Auto-Scrape above to keep prices updated automatically<br>
         <strong style="color:var(--amber)">Competitor modes:</strong> <strong>Brand</strong> = similar products from other brands · <strong>Reseller</strong> = other sellers of your exact ASIN · <strong>Both</strong> = combined
       </div>
     </div>
@@ -630,7 +663,7 @@ function nav(page, el) {
 // ── LOAD data from API ────────────────────────────────────────────────
 async function loadScrapedData() {
   try {
-    const resp = await fetch('http://localhost:3000/api/data');
+    const resp = await fetch('/api/data');
     if (!resp.ok) throw new Error('API not reachable');
     const data = await resp.json();
 
@@ -1388,7 +1421,7 @@ async function addAndScrape() {
 
   try {
     // Kick off scrape job
-    const startResp = await fetch('http://localhost:3000/api/scrape', {
+    const startResp = await fetch('/api/scrape', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ asin, my_price: myP, cost, floor, map, comp_mode: selectedCompMode })
@@ -1451,7 +1484,7 @@ async function pollJob(jobId) {
   return new Promise((resolve, reject) => {
     const interval = setInterval(async () => {
       try {
-        const r = await fetch(`http://localhost:3000/api/jobs/${jobId}`);
+        const r = await fetch(`/api/jobs/${jobId}`);
         const job = await r.json();
         // Show new log lines
         const logEl = $('scrape-log');
@@ -1503,7 +1536,7 @@ async function runScrape() {
 async function deleteProduct(asin) {
   if (!confirm(`Remove ${asin} from your dashboard?`)) return;
   try {
-    const r = await fetch(`http://localhost:3000/api/data/${asin}`, { method: 'DELETE' });
+    const r = await fetch(`/api/data/${asin}`, { method: 'DELETE' });
     if (!r.ok) throw new Error('Server error');
   } catch (e) {
     // continue — remove from local state regardless
@@ -1550,9 +1583,139 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+// ── SCHEDULER ─────────────────────────────────────────────────────────
+let schedulerPollTimer = null;
+let schedulerLogLines  = [];
+
+async function fetchSchedulerStatus() {
+  try {
+    const r = await fetch('/api/scheduler');
+    if (!r.ok) return null;
+    return await r.json();
+  } catch(e) { return null; }
+}
+
+function updateLiveIndicator(status) {
+  const dot   = $('live-dot');
+  const label = $('live-label');
+  const ind   = $('live-indicator');
+  if (!dot || !label) return;
+
+  if (status?.running) {
+    dot.style.background   = status.currentlyRunning ? 'var(--amber)' : 'var(--green)';
+    dot.style.boxShadow    = status.currentlyRunning ? '0 0 6px var(--amber)' : '0 0 6px var(--green)';
+    label.textContent      = status.currentlyRunning ? 'Scraping…' : `Live · ${status.intervalMins}m`;
+    label.style.color      = 'var(--green)';
+    if (ind) ind.style.borderColor = 'var(--green-border)';
+  } else {
+    dot.style.background   = 'var(--text-3)';
+    dot.style.boxShadow    = 'none';
+    label.textContent      = 'Manual';
+    label.style.color      = 'var(--text-3)';
+    if (ind) ind.style.borderColor = 'var(--border)';
+  }
+}
+
+function updateSchedulerUI(status) {
+  if (!status) return;
+  updateLiveIndicator(status);
+
+  const btn    = $('scheduler-toggle-btn');
+  const badge  = $('scheduler-status-badge');
+  const next   = $('scheduler-next');
+  const logDiv = $('scheduler-live-log');
+
+  if (btn) {
+    if (status.running) {
+      btn.textContent = '⏹ Stop Auto-Scrape';
+      btn.className   = 'btn';
+    } else {
+      btn.textContent = '▶ Start Auto-Scrape';
+      btn.className   = 'btn primary';
+    }
+  }
+  if (badge) {
+    badge.textContent = status.running ? (status.currentlyRunning ? '🔄 Scraping' : '✅ Active') : 'Stopped';
+    badge.className   = 'badge ' + (status.running ? (status.currentlyRunning ? 'b-amber' : 'b-green') : 'b-gray');
+  }
+  if (next && status.nextRunAt) {
+    next.textContent = 'Next run: ' + timeSince(new Date(Date.now() - (new Date(status.nextRunAt) - Date.now())).toISOString()).replace(' ago','') + ' from now';
+    next.textContent = 'Next: ' + new Date(status.nextRunAt).toLocaleTimeString();
+  } else if (next) {
+    next.textContent = status.lastRunAt ? 'Last: ' + timeSince(status.lastRunAt) : '';
+  }
+  if (logDiv) logDiv.style.display = status.running ? 'block' : 'none';
+
+  // Set interval selector to match saved config
+  const sel = $('scheduler-interval');
+  if (sel && status.config?.intervalMins) sel.value = String(status.config.intervalMins);
+}
+
+async function toggleScheduler() {
+  const status = await fetchSchedulerStatus();
+  const intervalMins = parseInt($('scheduler-interval')?.value) || 15;
+
+  if (status?.running) {
+    await fetch('/api/scheduler', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'stop', intervalMins })
+    });
+    showToast('Auto-scrape stopped');
+  } else {
+    await fetch('/api/scheduler', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'start', intervalMins })
+    });
+    showToast(`Auto-scrape started — every ${intervalMins} min`);
+  }
+  const newStatus = await fetchSchedulerStatus();
+  updateSchedulerUI(newStatus);
+}
+
+async function schedulerRunNow() {
+  showToast('🔄 Running scrape cycle now…');
+  await fetch('/api/scheduler', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ action:'run_now' })
+  });
+  // Poll for completion then reload data
+  let attempts = 0;
+  const poll = setInterval(async () => {
+    attempts++;
+    const s = await fetchSchedulerStatus();
+    updateSchedulerUI(s);
+    if (!s?.currentlyRunning || attempts > 120) {
+      clearInterval(poll);
+      await loadScrapedData();
+      showToast('✓ Scrape cycle complete');
+    }
+  }, 2000);
+}
+
+// Poll scheduler status every 10s to keep UI in sync and auto-reload data
+async function pollScheduler() {
+  const status = await fetchSchedulerStatus();
+  if (status) {
+    updateLiveIndicator(status);
+    // If a scheduled scrape just finished, reload data automatically
+    if (!status.currentlyRunning && status.lastRunAt) {
+      const lastRun = new Date(status.lastRunAt);
+      const now     = new Date();
+      if ((now - lastRun) < 12000) { // finished in last 12s
+        await loadScrapedData();
+      }
+    }
+    // Update scheduler UI if on scraping page
+    if ($('page-scraping')?.classList.contains('on')) updateSchedulerUI(status);
+  }
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────
 renderEmpty();
 loadScrapedData();
+// Poll scheduler status every 10s
+setInterval(pollScheduler, 10000);
+pollScheduler(); // initial check
 </script>
 </body>
 </html>
