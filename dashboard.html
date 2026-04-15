@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PriceIQ — Amazon Price Intelligence</title>
+<title>PriceIQ -Amazon Price Intelligence</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
@@ -203,7 +203,7 @@ canvas{max-height:220px}
     <div class="tb-search"><input type="text" placeholder="Search products…" oninput="searchProducts(this.value)"></div>
     <button class="btn" onclick="openModal('add-product-modal')">+ Add Product</button>
     <button class="btn primary" id="topbar-scrape" onclick="runScrape()">▶ Run Scrape</button>
-    <div id="live-indicator" title="Auto-scrape — click to configure" style="display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--text-3);cursor:pointer;padding:6px 10px;border-radius:8px;border:1.5px solid var(--border);transition:all .15s" onclick="nav('scraping',document.querySelectorAll('.sb-item')[11])">
+    <div id="live-indicator" title="Auto-scrape -click to configure" style="display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--text-3);cursor:pointer;padding:6px 10px;border-radius:8px;border:1.5px solid var(--border);transition:all .15s" onclick="nav('scraping',document.querySelectorAll('.sb-item')[11])">
       <div id="live-dot" style="width:8px;height:8px;border-radius:50%;background:var(--text-3);transition:background .3s"></div>
       <span id="live-label">Manual</span>
     </div>
@@ -442,7 +442,7 @@ canvas{max-height:220px}
     </div>
     <div class="grid g-3" id="opp-stat-cards"></div>
     <div class="chart-card fade-up" style="margin-top:4px">
-      <div class="chart-head"><div class="chart-title">Price Gap Overview — My Price vs Comp Low vs Comp Avg</div></div>
+      <div class="chart-head"><div class="chart-title">Price Gap Overview -My Price vs Comp Low vs Comp Avg</div></div>
       <canvas id="opp-gap-chart"></canvas>
     </div>
     <div class="grid g-2" style="margin-top:4px">
@@ -462,7 +462,7 @@ canvas{max-height:220px}
   <!-- ══ DATA EXPLORER ══ -->
   <div class="page" id="page-explorer">
     <div class="sec-head">
-      <div><div class="sec-title">Data Explorer</div><div class="sec-sub" id="explorer-sub">Raw product data — sort, filter, and verify</div></div>
+      <div><div class="sec-title">Data Explorer</div><div class="sec-sub" id="explorer-sub">Raw product data -sort, filter, and verify</div></div>
       <div class="sec-actions">
         <button class="btn" onclick="explorerExportCSV()">⬇ Export CSV</button>
       </div>
@@ -580,7 +580,7 @@ canvas{max-height:220px}
 <div id="toast">✓ <span id="toast-msg"></span></div>
 
 <script>
-// ── STATE — all live from scraped_data.json ───────────────────────────
+// ── STATE -all live from scraped_data.json ───────────────────────────
 let PRODUCTS = [];
 let ALERTS   = [];
 let RULES    = [];
@@ -620,7 +620,7 @@ function updateProductFilter() {
   // Rebuild options
   const current = SELECTED_ASIN;
   wrap.innerHTML = '<option value="all">📦 All Products (' + PRODUCTS.length + ')</option>' +
-    PRODUCTS.map(p => `<option value="${p.asin}" ${p.asin === current ? 'selected' : ''}>${p.img} ${(p.name||p.asin).slice(0,35)} — ${fmt(p.price)}</option>`).join('');
+    PRODUCTS.map(p => `<option value="${p.asin}" ${p.asin === current ? 'selected' : ''}>${p.img} ${(p.name||p.asin).slice(0,35)} -${fmt(p.price)}</option>`).join('');
 }
 
 // ── HELPERS ──────────────────────────────────────────────────────────
@@ -710,7 +710,7 @@ async function loadScrapedData() {
     buildActivity();
 
     renderAll();
-    showToast('✓ Loaded ' + mapped.length + ' product' + (mapped.length !== 1 ? 's' : '') + ' — scraped ' + timeSince(data.scraped_at));
+    showToast('✓ Loaded ' + mapped.length + ' product' + (mapped.length !== 1 ? 's' : '') + ' -scraped ' + timeSince(data.scraped_at));
     return true;
   } catch (e) {
     console.warn('scraped_data.json not found:', e.message);
@@ -723,11 +723,11 @@ function buildAlerts() {
   ALERTS = [];
   PRODUCTS.forEach(p => {
     if (p.urgency === 'critical' && p.gap < 0)
-      ALERTS.push({ type: 'critical', title: (p.name || p.asin).slice(0, 45) + ' — undercut!', sub: 'Comp low ' + fmt(p.compLow) + ' vs your price ' + fmt(p.price) + ' (' + p.gap + '%)', time: timeSince(p.last_scraped) });
+      ALERTS.push({ type: 'critical', title: (p.name || p.asin).slice(0, 45) + ' -undercut!', sub: 'Comp low ' + fmt(p.compLow) + ' vs your price ' + fmt(p.price) + ' (' + p.gap + '%)', time: timeSince(p.last_scraped) });
     if (!p.buybox)
       ALERTS.push({ type: 'high', title: 'Buy Box lost: ' + (p.name || p.asin).slice(0, 38), sub: (p.buybox_seller || 'Competitor') + ' owns Buy Box · ' + p.asin, time: timeSince(p.last_scraped) });
     if (p.map > 0 && p.compLow > 0 && p.compLow < p.map)
-      ALERTS.push({ type: 'critical', title: 'MAP Violation: ' + (p.name || p.asin).slice(0, 35), sub: 'Comp at ' + fmt(p.compLow) + ' — below MAP ' + fmt(p.map), time: timeSince(p.last_scraped) });
+      ALERTS.push({ type: 'critical', title: 'MAP Violation: ' + (p.name || p.asin).slice(0, 35), sub: 'Comp at ' + fmt(p.compLow) + ' -below MAP ' + fmt(p.map), time: timeSince(p.last_scraped) });
     if (p.stock === 'oos')
       ALERTS.push({ type: 'amber', title: 'Out of stock: ' + (p.name || p.asin).slice(0, 38), sub: 'Product unavailable · ' + p.asin, time: timeSince(p.last_scraped) });
   });
@@ -737,7 +737,7 @@ function buildAlerts() {
 function buildActivity() {
   ACTIVITY = [];
   PRODUCTS.forEach(p => {
-    ACTIVITY.push({ icon: p.img, asin: p.asin, msg: (p.name || p.asin).slice(0, 50) + ' — scraped at ' + fmt(p.scraped_price) + ' (your price ' + fmt(p.price) + ')', time: timeSince(p.last_scraped) });
+    ACTIVITY.push({ icon: p.img, asin: p.asin, msg: (p.name || p.asin).slice(0, 50) + ' -scraped at ' + fmt(p.scraped_price) + ' (your price ' + fmt(p.price) + ')', time: timeSince(p.last_scraped) });
     if (p.compOffers && p.compOffers.length)
       ACTIVITY.push({ icon: '🔍', asin: p.asin, msg: p.compOffers.length + ' competitors found for ' + (p.name || p.asin).slice(0, 40), time: timeSince(p.last_scraped) });
     if (!p.buybox)
@@ -815,7 +815,7 @@ function renderDashboard() {
       <div class="tc">${urgBadge(p.urgency)}</div>
     </div>`).join('') : '<div class="empty"><div class="empty-icon">✅</div><div class="empty-label">No critical products</div></div>';
 
-  // Activity log — filter to selected product if needed
+  // Activity log -filter to selected product if needed
   const filteredActivity = SELECTED_ASIN === 'all' ? ACTIVITY :
     ACTIVITY.filter(a => a.asin === SELECTED_ASIN);
   $('activity-log').innerHTML = (filteredActivity.length ? filteredActivity : ACTIVITY).slice(0, 8).map(a => `
@@ -931,7 +931,7 @@ function renderCompetitors() {
   const allComps = FP.flatMap(p => (p.compOffers || []).map(c => ({ ...c, myPrice: p.price, myProduct: p })));
 
   if (!allComps.length) {
-    $('comp-cards').innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🔍</div><div class="empty-label">No competitor data yet</div><div style="font-size:12px;color:var(--text-3);margin-top:4px">Run python scraper.py — competitors are scraped from Amazon search results</div></div>';
+    $('comp-cards').innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🔍</div><div class="empty-label">No competitor data yet</div><div style="font-size:12px;color:var(--text-3);margin-top:4px">Run python scraper.py -competitors are scraped from Amazon search results</div></div>';
     $('comp-matrix').innerHTML = '<div class="empty"><div class="empty-icon">📊</div><div class="empty-label">Run scraper.py to populate</div></div>';
     return;
   }
@@ -981,7 +981,7 @@ function renderCompetitors() {
 // ── REPRICING ─────────────────────────────────────────────────────────
 function renderPricing() {
   if (!RULES.length) {
-    $('repricing-rules').innerHTML = '<div class="empty"><div class="empty-icon">⚙️</div><div class="empty-label">No rules yet — click + New Rule</div></div>';
+    $('repricing-rules').innerHTML = '<div class="empty"><div class="empty-icon">⚙️</div><div class="empty-label">No rules yet -click + New Rule</div></div>';
   } else {
     $('repricing-rules').innerHTML = RULES.map((r, i) => `
       <div class="rule-card">
@@ -1036,7 +1036,7 @@ function renderPricing() {
       <div class="tc"><span class="badge ${s.badge}" style="white-space:normal;line-height:1.4">${s.action}</span></div>
       <div class="tc"><button class="btn primary" style="font-size:11px;padding:5px 10px" onclick="showToast('Applied: ${s.action.slice(0,30)}…')">Apply</button></div>
     </div>`).join('')
-    : '<div class="empty"><div class="empty-icon">✅</div><div class="empty-label">No reprice suggestions — pricing looks good</div></div>';
+    : '<div class="empty"><div class="empty-icon">✅</div><div class="empty-label">No reprice suggestions -pricing looks good</div></div>';
 }
 
 // ── CHARTS ────────────────────────────────────────────────────────────
@@ -1129,7 +1129,7 @@ function closeModal(id) { $(id).classList.remove('on'); }
 function revealKey() {
   const el=$('api-key-display');
   const stored=localStorage.getItem('syphoon_key')||'';
-  if (el.textContent.includes('•')) el.textContent=stored||'(no key saved — enter in Settings)';
+  if (el.textContent.includes('•')) el.textContent=stored||'(no key saved -enter in Settings)';
   else el.textContent=stored?stored.slice(0,8)+'••••••••':'••••••••••••••••';
 }
 function saveSettings() {
@@ -1358,7 +1358,7 @@ function showProductDetail(asin) {
 
     <div style="margin-bottom:14px">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-3);margin-bottom:8px">
-        Competitors from Amazon Search — ${p.compOffers ? p.compOffers.length : 0} found
+        Competitors from Amazon Search -${p.compOffers ? p.compOffers.length : 0} found
         ${p.compLow > 0 ? ' · Low: $' + p.compLow.toFixed(2) + ' · High: $' + p.compHigh.toFixed(2) + ' · Avg: $' + p.compAvg.toFixed(2) : ''}
       </div>
       ${offersHtml}
@@ -1405,7 +1405,7 @@ async function addAndScrape() {
   const raw = ($('inp-asin')?.value || '').trim();
   if (!raw) { showToast('Enter an ASIN'); return; }
   let asin = raw.includes('amazon.com') ? (raw.match(/\/dp\/([A-Z0-9]{10})/i)||[])[1] : raw.toUpperCase();
-  if (!asin || asin.length !== 10) { showToast('Invalid ASIN — must be 10 characters'); return; }
+  if (!asin || asin.length !== 10) { showToast('Invalid ASIN -must be 10 characters'); return; }
 
   const myP   = parseFloat($('inp-myprice')?.value) || 0;
   const cost  = parseFloat($('inp-cost')?.value)    || 0;
@@ -1426,7 +1426,7 @@ async function addAndScrape() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ asin, my_price: myP, cost, floor, map, comp_mode: selectedCompMode })
     });
-    if (!startResp.ok) throw new Error('Server error — is server.js running?');
+    if (!startResp.ok) throw new Error('Server error -is server.js running?');
     const { jobId } = await startResp.json();
 
     // Poll job until done
@@ -1529,7 +1529,7 @@ async function runScrape() {
   const btns = document.querySelectorAll('[onclick*="runScrape"]');
   btns.forEach(b => { b.textContent = '⏳ Loading…'; b.disabled = true; });
   const loaded = await loadScrapedData();
-  if (!loaded) showToast('No data yet — add a product and scrape it');
+  if (!loaded) showToast('No data yet -add a product and scrape it');
   btns.forEach(b => { b.textContent = b.id === 'topbar-scrape' ? '▶ Reload Data' : '▶ Reload JSON'; b.disabled = false; });
 }
 // ── DELETE PRODUCT ────────────────────────────────────────────────────
@@ -1539,7 +1539,7 @@ async function deleteProduct(asin) {
     const r = await fetch(`/api/data/${asin}`, { method: 'DELETE' });
     if (!r.ok) throw new Error('Server error');
   } catch (e) {
-    // continue — remove from local state regardless
+    // continue -remove from local state regardless
   }
   const idx = PRODUCTS.findIndex(p => p.asin === asin);
   if (idx > -1) PRODUCTS.splice(idx, 1);
@@ -1565,7 +1565,7 @@ async function runScrape() {
   const btns = document.querySelectorAll('[onclick*="runScrape"]');
   btns.forEach(b => { b.textContent = '⏳ Loading…'; b.disabled = true; });
   const loaded = await loadScrapedData();
-  if (!loaded) showToast('No scraped_data.json found — run: python scraper.py');
+  if (!loaded) showToast('No scraped_data.json found -run: python scraper.py');
   btns.forEach(b => { b.textContent = b.id === 'topbar-scrape' ? '▶ Run Scrape' : '▶ Reload JSON'; b.disabled = false; });
 }
 
@@ -1666,7 +1666,7 @@ async function toggleScheduler() {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ action:'start', intervalMins })
     });
-    showToast(`Auto-scrape started — every ${intervalMins} min`);
+    showToast(`Auto-scrape started -every ${intervalMins} min`);
   }
   const newStatus = await fetchSchedulerStatus();
   updateSchedulerUI(newStatus);
