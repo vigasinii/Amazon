@@ -1,0 +1,1558 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PriceIQ — Amazon Price Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[data-theme="dark"]{
+  --bg:#0a0d14;--surface-1:#111520;--surface-2:#161b2b;--surface-3:#1c2236;--surface-4:#212840;
+  --border:#1f2d44;--border-2:#2a3a55;--text-1:#f0f4ff;--text-2:#8a9bc0;--text-3:#4a5a78;
+  --shadow:0 1px 3px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.3);--shadow-lg:0 8px 32px rgba(0,0,0,.5);
+  --input-bg:#161b2b;--hover-overlay:rgba(255,255,255,.03);
+}
+[data-theme="light"]{
+  --bg:#f4f6fb;--surface-1:#ffffff;--surface-2:#f8f9fd;--surface-3:#eef1f8;--surface-4:#e4e8f3;
+  --border:#dde3f0;--border-2:#c8d0e5;--text-1:#0f1624;--text-2:#4a5878;--text-3:#8a9ab8;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.06);--shadow-lg:0 8px 32px rgba(0,0,0,.12);
+  --input-bg:#f8f9fd;--hover-overlay:rgba(0,0,0,.02);
+}
+:root{
+  --blue:#3b82f6;--blue-soft:rgba(59,130,246,.12);--blue-border:rgba(59,130,246,.3);
+  --cyan:#06b6d4;--cyan-soft:rgba(6,182,212,.1);
+  --green:#10b981;--green-soft:rgba(16,185,129,.12);--green-border:rgba(16,185,129,.3);
+  --red:#ef4444;--red-soft:rgba(239,68,68,.12);--red-border:rgba(239,68,68,.3);
+  --amber:#f59e0b;--amber-soft:rgba(245,158,11,.12);--amber-border:rgba(245,158,11,.3);
+  --purple:#8b5cf6;--purple-soft:rgba(139,92,246,.12);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text-1);font-size:13.5px;line-height:1.5;-webkit-font-smoothing:antialiased;display:flex;min-height:100vh;transition:background .25s,color .25s}
+.sidebar{width:220px;min-height:100vh;background:var(--surface-1);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;transition:background .25s,border-color .25s}
+.sb-logo{padding:18px 16px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.sb-logomark{width:34px;height:34px;background:linear-gradient(135deg,var(--blue),var(--cyan));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;box-shadow:0 2px 8px rgba(59,130,246,.3)}
+.sb-brand{font-size:16px;font-weight:800;letter-spacing:-.4px;color:var(--text-1)}
+.sb-tagline{font-size:10px;color:var(--text-3);font-weight:500;margin-top:1px}
+.sb-section{padding:20px 16px 6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-3)}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 12px;margin:1px 8px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text-2);transition:all .15s;border:1px solid transparent;user-select:none}
+.sb-item:hover{background:var(--surface-2);color:var(--text-1)}
+.sb-item.on{background:var(--blue-soft);color:var(--blue);border-color:var(--blue-border);font-weight:600}
+.sb-item .icon{width:18px;text-align:center;font-size:15px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:inherit}
+.sb-badge{margin-left:auto;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;background:var(--red-soft);color:var(--red);padding:2px 7px;border-radius:20px}
+.sb-footer{margin-top:auto;padding:14px 12px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:10px}
+.theme-pills{display:flex;background:var(--surface-3);border-radius:8px;padding:3px;gap:2px;border:1px solid var(--border)}
+.theme-pill{flex:1;text-align:center;padding:5px 0;border-radius:6px;font-size:11px;font-weight:600;color:var(--text-3);cursor:pointer;transition:all .15s}
+.theme-pill.on{background:var(--surface-1);color:var(--text-1);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.sb-user{display:flex;align-items:center;gap:9px}
+.sb-av{width:32px;height:32px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--purple),var(--blue));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff}
+.sb-uname{font-size:12.5px;font-weight:700;color:var(--text-1)}
+.sb-uplan{font-size:11px;color:var(--text-3);font-weight:500}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{height:56px;background:var(--surface-1);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;position:sticky;top:0;z-index:50;transition:background .25s,border-color .25s;box-shadow:var(--shadow)}
+.tb-title{font-size:17px;font-weight:800;flex:1;letter-spacing:-.3px;color:var(--text-1)}
+.tb-search{position:relative;flex:0 0 240px}
+.tb-search input{width:100%;background:var(--surface-2);border:1.5px solid var(--border);border-radius:9px;padding:7px 12px 7px 34px;color:var(--text-1);font-family:'Inter',sans-serif;font-size:13px;outline:none;transition:.15s}
+.tb-search input::placeholder{color:var(--text-3)}
+.tb-search input:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+.tb-search::before{content:'⌕';position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--text-3);pointer-events:none}
+.btn{padding:7px 16px;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;border:1.5px solid var(--border-2);color:var(--text-2);background:var(--surface-2);font-family:'Inter',sans-serif;transition:all .15s;white-space:nowrap}
+.btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-soft)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.primary{background:linear-gradient(135deg,var(--blue),var(--cyan));border-color:transparent;color:#fff;box-shadow:0 2px 8px rgba(59,130,246,.3)}
+.btn.primary:hover{opacity:.9;transform:translateY(-1px)}
+.notif-btn{width:36px;height:36px;border-radius:9px;background:var(--surface-2);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:all .15s;font-size:15px;color:var(--text-2)}
+.notif-dot{position:absolute;top:5px;right:5px;width:8px;height:8px;background:var(--red);border-radius:50%;border:2px solid var(--surface-1)}
+.page{padding:24px;display:none;flex-direction:column;gap:20px}
+.page.on{display:flex}
+.grid{display:grid;gap:14px}
+.g-5{grid-template-columns:repeat(5,1fr)}
+.g-4{grid-template-columns:repeat(4,1fr)}
+.g-3{grid-template-columns:repeat(3,1fr)}
+.g-2{grid-template-columns:repeat(2,1fr)}
+.card{background:var(--surface-1);border:1.5px solid var(--border);border-radius:12px;padding:18px;position:relative;overflow:hidden;transition:all .2s;box-shadow:var(--shadow)}
+.card:hover{border-color:var(--border-2);box-shadow:var(--shadow-lg)}
+.card-accent{position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0}
+.card-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-3);margin-bottom:10px}
+.card-val{font-size:30px;font-weight:800;font-family:'JetBrains Mono',monospace;line-height:1;letter-spacing:-.5px}
+.card-sub{font-size:12px;color:var(--text-2);margin-top:6px;font-weight:500}
+.card-icon{position:absolute;right:16px;top:16px;font-size:20px;opacity:.25}
+.card-prog{height:4px;background:var(--surface-3);border-radius:2px;margin-top:16px;overflow:hidden}
+.card-fill{height:100%;border-radius:2px;transition:width 1.4s cubic-bezier(.16,1,.3,1)}
+.sec-head{display:flex;align-items:center;justify-content:space-between}
+.sec-title{font-size:15px;font-weight:800;letter-spacing:-.2px;color:var(--text-1)}
+.sec-sub{font-size:12.5px;color:var(--text-2);margin-top:2px;font-weight:500}
+.sec-actions{display:flex;gap:8px}
+.tbl-wrap{background:var(--surface-1);border:1.5px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
+.tbl-hdr{display:grid;background:var(--surface-2);border-bottom:1.5px solid var(--border)}
+.tbl-row{display:grid;border-bottom:1px solid var(--border);transition:background .1s;cursor:pointer}
+.tbl-row:last-child{border:none}
+.tbl-row:hover{background:var(--hover-overlay)}
+.tc{padding:11px 14px;display:flex;align-items:center;font-size:13px;color:var(--text-1)}
+.th{padding:10px 14px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-3)}
+.badge{padding:3px 9px;border-radius:6px;font-size:10.5px;font-weight:700;letter-spacing:.3px;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+.b-green{background:var(--green-soft);color:var(--green);border:1px solid var(--green-border)}
+.b-red{background:var(--red-soft);color:var(--red);border:1px solid var(--red-border)}
+.b-amber{background:var(--amber-soft);color:var(--amber);border:1px solid var(--amber-border)}
+.b-blue{background:var(--blue-soft);color:var(--blue);border:1px solid var(--blue-border)}
+.b-purple{background:var(--purple-soft);color:var(--purple);border:1px solid rgba(139,92,246,.3)}
+.b-gray{background:var(--surface-3);color:var(--text-3);border:1px solid var(--border)}
+.pill-row{display:flex;gap:6px;flex-wrap:wrap}
+.pill{padding:5px 13px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);color:var(--text-2);background:var(--surface-2);transition:all .15s;font-family:'Inter',sans-serif}
+.pill:hover{border-color:var(--blue);color:var(--blue)}
+.pill.on{background:var(--blue-soft);border-color:var(--blue-border);color:var(--blue)}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--border)}
+.setting-row:last-child{border:none}
+.setting-label{font-size:13.5px;font-weight:600;color:var(--text-1)}
+.setting-sub{font-size:12px;color:var(--text-3);margin-top:2px}
+.toggle{width:38px;height:22px;background:var(--surface-4);border-radius:11px;cursor:pointer;position:relative;transition:.2s;flex-shrink:0;border:1.5px solid var(--border)}
+.toggle.on{background:var(--blue);border-color:var(--blue)}
+.toggle::after{content:'';position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;top:2px;left:2px;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle.on::after{left:18px}
+.rule-card{background:var(--surface-2);border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:8px}
+.rule-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.rule-name{font-size:13.5px;font-weight:700;color:var(--text-1)}
+.rule-chain{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px}
+.rule-node{padding:5px 11px;border-radius:7px;background:var(--surface-1);border:1.5px solid var(--border);color:var(--text-2);font-weight:500}
+.rule-arrow{color:var(--text-3);font-size:12px}
+.alert-item{display:flex;align-items:flex-start;gap:12px;padding:13px 16px;border-bottom:1px solid var(--border);transition:background .1s}
+.alert-item:last-child{border:none}
+.alert-item:hover{background:var(--hover-overlay)}
+.alert-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.alert-title{font-size:13px;font-weight:600;color:var(--text-1)}
+.alert-sub{font-size:11.5px;color:var(--text-3);margin-top:2px;font-weight:500}
+.alert-time{font-size:10.5px;font-family:'JetBrains Mono',monospace;color:var(--text-3);flex-shrink:0}
+.prog-bar{height:6px;background:var(--surface-3);border-radius:3px;overflow:hidden;flex:1}
+.prog-fill{height:100%;border-radius:3px;transition:width .6s}
+.form-group{margin-bottom:14px}
+.form-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-3);margin-bottom:6px;display:block}
+.form-input{width:100%;background:var(--input-bg);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text-1);font-family:'Inter',sans-serif;font-size:13px;outline:none;transition:.15s}
+.form-input::placeholder{color:var(--text-3)}
+.form-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+select.form-input{cursor:pointer}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);z-index:200;display:none;align-items:center;justify-content:center}
+.modal-bg.on{display:flex}
+.modal{background:var(--surface-1);border:1.5px solid var(--border);border-radius:14px;padding:26px;width:540px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-title{font-size:16px;font-weight:800;letter-spacing:-.3px;color:var(--text-1)}
+.modal-close{width:30px;height:30px;background:var(--surface-2);border:1.5px solid var(--border);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text-2);transition:all .15s}
+.modal-close:hover{border-color:var(--red);color:var(--red)}
+#toast{position:fixed;bottom:24px;right:24px;background:var(--surface-1);border:1.5px solid var(--green-border);border-radius:10px;padding:12px 18px;font-size:13px;color:var(--green);font-weight:600;z-index:999;transform:translateY(80px);opacity:0;transition:.3s cubic-bezier(.16,1,.3,1);pointer-events:none;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:8px}
+.mono{font-family:'JetBrains Mono',monospace}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px;color:var(--text-3);gap:8px;text-align:center}
+.empty-icon{font-size:36px;opacity:.35}
+.empty-label{font-size:14px;font-weight:700;color:var(--text-2)}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:3px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.fade-up{animation:fadeUp .35s ease both}
+.chart-card{background:var(--surface-1);border:1.5px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow)}
+.chart-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.chart-title{font-size:14px;font-weight:700;color:var(--text-1)}
+.comp-mode-btn{padding:10px 12px;border-radius:9px;border:1.5px solid var(--border);cursor:pointer;background:var(--surface-2);transition:all .15s}
+.comp-mode-btn:hover{border-color:var(--blue)}
+.comp-mode-btn.on{border-color:var(--blue);background:var(--blue-soft)}
+canvas{max-height:220px}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logomark">💹</div>
+    <div><div class="sb-brand">PriceIQ</div><div class="sb-tagline">Amazon Intelligence</div></div>
+  </div>
+  <div class="sb-section">Main</div>
+  <div class="sb-item on" onclick="nav('dashboard',this)"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>Dashboard</div>
+  <div class="sb-item" onclick="nav('products',this)"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span>Products<span class="sb-badge" id="sb-products-count" style="display:none">0</span></div>
+  <div class="sb-item" onclick="nav('pricing',this)"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span>Repricing</div>
+  <div class="sb-item" onclick="nav('analytics',this)"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M7 16l3-4 3 4 4-6"/></svg></span>Analytics</div>
+  <div class="sb-section">Monitor</div>
+  <div class="sb-item" onclick="nav('alerts',this)"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>Alerts<span class="sb-badge" id="sb-alerts-count" style="display:none">0</span></div>
+  <div class="sb-item" onclick="nav('watchlist',this)"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>Watchlist<span class="sb-badge" id="sb-watchlist-count" style="display:none">0</span></div>
+  <div class="sb-item" onclick="nav('competitors',this)"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>Competitors</div>
+  <div class="sb-item" onclick="nav('opportunities',this)"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>Opportunities</div>
+  <div class="sb-section">Data</div>
+  <div class="sb-item" onclick="nav('explorer',this)"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg></span>Data Explorer</div>
+  <div class="sb-item" onclick="nav('scraping',this)"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>Scraping</div>
+  <div class="sb-section">Account</div>
+  <div class="sb-item" onclick="nav('settings',this)"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>Settings</div>
+  <div class="sb-footer">
+    <div class="theme-pills">
+      <div class="theme-pill on" onclick="setTheme('light',this)">☀️ Light</div>
+      <div class="theme-pill" onclick="setTheme('dark',this)">🌙 Dark</div>
+    </div>
+    <div class="sb-user">
+      <div class="sb-av">PQ</div>
+      <div><div class="sb-uname">PriceIQ</div><div class="sb-uplan" id="sb-asin-count">No data loaded</div></div>
+    </div>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="topbar">
+    <div class="tb-title" id="tb-title">Dashboard</div>
+    <div id="product-filter-wrap" style="display:none;flex:0 0 auto">
+      <select id="product-filter" class="form-input" onchange="selectProduct(this.value)" style="font-size:12.5px;padding:6px 10px;min-width:200px;max-width:260px">
+        <option value="all">All Products</option>
+      </select>
+    </div>
+    <div class="tb-search"><input type="text" placeholder="Search products…" oninput="searchProducts(this.value)"></div>
+    <button class="btn" onclick="openModal('add-product-modal')">+ Add Product</button>
+    <button class="btn primary" id="topbar-scrape" onclick="runScrape()">▶ Run Scrape</button>
+    <div class="notif-btn" id="notif-btn" title="Alerts" onclick="nav('alerts',document.querySelectorAll('.sb-item')[4])">🔔<div class="notif-dot" id="notif-dot" style="display:none"></div></div>
+  </div>
+
+  <!-- ══ DASHBOARD ══ -->
+  <div class="page on" id="page-dashboard">
+    <div class="grid g-5" id="dash-stat-cards">
+      <div class="card fade-up"><div class="card-accent" style="background:var(--green)"></div><div class="card-icon">📦</div><div class="card-label">Products</div><div class="card-val" id="stat-products" style="color:var(--green)">—</div><div class="card-sub" id="stat-products-sub">No data</div></div>
+      <div class="card fade-up"><div class="card-accent" style="background:var(--red)"></div><div class="card-icon">🚨</div><div class="card-label">Critical</div><div class="card-val" id="stat-critical" style="color:var(--red)">—</div><div class="card-sub">Urgency: critical</div></div>
+      <div class="card fade-up"><div class="card-accent" style="background:var(--amber)"></div><div class="card-icon">📉</div><div class="card-label">Avg Gap</div><div class="card-val" id="stat-gap" style="color:var(--amber)">—</div><div class="card-sub">vs competitors</div></div>
+      <div class="card fade-up"><div class="card-accent" style="background:var(--blue)"></div><div class="card-icon">🏆</div><div class="card-label">Buy Box</div><div class="card-val" id="stat-buybox" style="color:var(--blue)">—</div><div class="card-sub">Winning</div></div>
+      <div class="card fade-up"><div class="card-accent" style="background:var(--cyan)"></div><div class="card-icon">💹</div><div class="card-label">Scrape Rate</div><div class="card-val" id="stat-scrape" style="color:var(--cyan)">—</div><div class="card-sub" id="stat-scrape-sub">Last run</div></div>
+    </div>
+
+    <div class="grid g-2">
+      <div class="chart-card fade-up">
+        <div class="chart-head">
+          <div class="chart-title">Price vs Competitors</div>
+        </div>
+        <canvas id="price-chart"></canvas>
+      </div>
+      <div class="chart-card fade-up">
+        <div class="chart-head"><div class="chart-title">Urgency Breakdown</div></div>
+        <canvas id="donut-chart"></canvas>
+        <div id="donut-legend" style="display:flex;gap:18px;margin-top:14px;flex-wrap:wrap"></div>
+      </div>
+    </div>
+
+    <div class="grid g-2">
+      <div>
+        <div class="sec-head" style="margin-bottom:12px">
+          <div><div class="sec-title">Priority Products</div></div>
+          <button class="btn" onclick="nav('products',document.querySelectorAll('.sb-item')[1])">View All</button>
+        </div>
+        <div class="tbl-wrap">
+          <div class="tbl-hdr" style="grid-template-columns:1fr 80px 80px 80px 90px">
+            <div class="th">Product</div><div class="th">My Price</div><div class="th">Comp Low</div><div class="th">Gap</div><div class="th">Status</div>
+          </div>
+          <div id="critical-table"></div>
+        </div>
+      </div>
+      <div>
+        <div class="sec-head" style="margin-bottom:12px"><div class="sec-title">Recent Activity</div></div>
+        <div class="tbl-wrap"><div id="activity-log"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PRODUCTS ══ -->
+  <div class="page" id="page-products">
+    <div class="sec-head">
+      <div><div class="sec-title">Product Catalog</div><div class="sec-sub" id="products-sub">Run scraper.py to load products</div></div>
+      <div class="sec-actions">
+        <button class="btn primary" onclick="openModal('add-product-modal')">+ Add Product</button>
+      </div>
+    </div>
+    <div class="pill-row">
+      <button class="pill on" onclick="filterProd('all',this)">All</button>
+      <button class="pill" onclick="filterProd('critical',this)">Critical</button>
+      <button class="pill" onclick="filterProd('high',this)">High</button>
+      <button class="pill" onclick="filterProd('oos',this)">Out of Stock</button>
+      <button class="pill" onclick="filterProd('map',this)">MAP Violations</button>
+      <button class="pill" onclick="filterProd('buybox',this)">Lost Buy Box</button>
+    </div>
+    <div class="tbl-wrap">
+      <div class="tbl-hdr" style="grid-template-columns:2fr 100px 100px 70px 80px 90px 100px 100px">
+        <div class="th">Product / ASIN</div><div class="th">My Price</div><div class="th">Buy Box</div>
+        <div class="th">Sellers</div><div class="th">Gap</div><div class="th">Stock</div>
+        <div class="th">Urgency</div><div class="th">Action</div>
+      </div>
+      <div id="products-table"></div>
+    </div>
+  </div>
+
+  <!-- ══ REPRICING ══ -->
+  <div class="page" id="page-pricing">
+    <div class="sec-head">
+      <div><div class="sec-title">Repricing Rules</div><div class="sec-sub">Auto-pricing logic applied to your products</div></div>
+      <button class="btn primary" onclick="openModal('rule-modal')">+ New Rule</button>
+    </div>
+    <div id="repricing-rules"></div>
+    <div class="sec-head" style="margin-top:4px"><div class="sec-title">Reprice Suggestions (Live)</div></div>
+    <div class="tbl-wrap"><div id="reprice-suggestions"></div></div>
+  </div>
+
+  <!-- ══ ALERTS ══ -->
+  <div class="page" id="page-alerts">
+    <div class="sec-head">
+      <div><div class="sec-title">Alerts</div><div class="sec-sub" id="alerts-sub">No alerts</div></div>
+      <button class="btn" onclick="ALERTS=[];renderAlerts();updateAlertBadge()">Clear All</button>
+    </div>
+    <div class="grid g-3" id="alert-stat-cards"></div>
+    <div class="tbl-wrap"><div id="alerts-list"></div></div>
+  </div>
+
+  <!-- ══ SCRAPING ══ -->
+  <div class="page" id="page-scraping">
+    <div class="sec-head">
+      <div><div class="sec-title">Scraping</div><div class="sec-sub">Python scraper → scraped_data.json → dashboard</div></div>
+      <button class="btn primary" onclick="runScrape()">▶ Reload JSON</button>
+    </div>
+    <div style="background:var(--blue-soft);border:1.5px solid var(--blue-border);border-radius:10px;padding:14px 18px;margin-bottom:4px">
+      <div style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:6px">🚀 How to use PriceIQ</div>
+      <div style="font-size:12.5px;color:var(--text-2);line-height:1.9">
+        <strong>1.</strong> Start the server: <code style="background:var(--surface-3);padding:1px 6px;border-radius:4px;font-family:monospace">npm install</code> then <code style="background:var(--surface-3);padding:1px 6px;border-radius:4px;font-family:monospace">node server.js</code><br>
+        <strong>2.</strong> Click <strong>+ Add Product</strong> in the topbar, enter an ASIN, choose competitor mode, and click <strong>▶ Scrape Now</strong><br>
+        <strong>3.</strong> Watch the live log — dashboard auto-refreshes when done<br>
+        <strong style="color:var(--amber)">Competitor modes:</strong> <strong>Brand</strong> = similar products from other brands · <strong>Reseller</strong> = other sellers of your exact ASIN · <strong>Both</strong> = combined
+      </div>
+    </div>
+    <div class="grid g-4" id="scrape-stat-cards">
+      <div class="card"><div class="card-accent" style="background:var(--green)"></div><div class="card-label">Last Run</div><div class="card-val" id="sc-lastrun" style="font-size:18px;color:var(--green)">—</div></div>
+      <div class="card"><div class="card-accent" style="background:var(--blue)"></div><div class="card-label">Products</div><div class="card-val" id="sc-products" style="color:var(--blue)">—</div></div>
+      <div class="card"><div class="card-accent" style="background:var(--cyan)"></div><div class="card-label">Success Rate</div><div class="card-val" id="sc-rate" style="color:var(--cyan)">—</div></div>
+      <div class="card"><div class="card-accent" style="background:var(--amber)"></div><div class="card-label">Competitors</div><div class="card-val" id="sc-comps" style="color:var(--amber)">—</div></div>
+    </div>
+    <div class="sec-head"><div class="sec-title">Scraped Product Data</div></div>
+    <div class="tbl-wrap">
+      <div class="tbl-hdr" style="grid-template-columns:2fr 100px 100px 100px 100px 100px">
+        <div class="th">Product</div><div class="th">Scraped $</div><div class="th">My $</div><div class="th">Rating</div><div class="th">Stock</div><div class="th">Status</div>
+      </div>
+      <div id="scrape-detail"></div>
+    </div>
+  </div>
+
+  <!-- ══ COMPETITORS ══ -->
+  <div class="page" id="page-competitors">
+    <div class="sec-head">
+      <div><div class="sec-title">Competitor Intelligence</div><div class="sec-sub" id="comp-sub">From Amazon search results</div></div>
+    </div>
+    <div class="grid g-4" id="comp-cards"></div>
+    <div class="sec-head"><div class="sec-title">Competitor Price Matrix</div></div>
+    <div class="tbl-wrap">
+      <div class="tbl-hdr" style="grid-template-columns:2.5fr 90px 90px 80px 80px 110px">
+        <div class="th">Competitor Product</div><div class="th" style="color:var(--cyan)">My Price</div>
+        <div class="th">Their Price</div><div class="th">Gap</div>
+        <div class="th">Reviews</div><div class="th">Position</div>
+      </div>
+      <div id="comp-matrix"></div>
+    </div>
+  </div>
+
+  <!-- ══ SETTINGS ══ -->
+  <div class="page" id="page-settings">
+    <div class="sec-head"><div><div class="sec-title">Settings</div></div></div>
+    <div class="grid g-2">
+      <div class="tbl-wrap"><div style="padding:6px 20px 16px">
+        <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.9px;padding:16px 0 8px">Notifications</div>
+        <div class="setting-row"><div><div class="setting-label">Email Alerts</div><div class="setting-sub">Price change alerts via email</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="setting-row"><div><div class="setting-label">MAP Violation Alerts</div><div class="setting-sub">Alert when minimum price is broken</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="setting-row"><div><div class="setting-label">Out-of-Stock Alerts</div><div class="setting-sub">Notify when competitor goes OOS</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      </div></div>
+      <div class="tbl-wrap"><div style="padding:6px 20px 16px">
+        <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.9px;padding:16px 0 8px">Pricing Guardrails</div>
+        <div class="setting-row"><div><div class="setting-label">Global Floor Margin</div><div class="setting-sub">Never price below cost + floor %</div></div><div style="display:flex;align-items:center;gap:6px"><input type="number" class="form-input" value="12" style="width:72px"><span style="color:var(--text-3)">%</span></div></div>
+        <div class="setting-row"><div><div class="setting-label">Max Price Reduction</div><div class="setting-sub">Single reprice max reduction</div></div><div style="display:flex;align-items:center;gap:6px"><input type="number" class="form-input" value="15" style="width:72px"><span style="color:var(--text-3)">%</span></div></div>
+        <div class="setting-row"><div><div class="setting-label">Require Manual Approval</div><div class="setting-sub">For changes greater than 10%</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.9px;padding:16px 0 8px">API Key</div>
+        <div class="setting-row"><div><div class="setting-label">Syphoon API Key</div><div class="setting-sub mono" id="api-key-display">••••••••••••••••</div></div><button class="btn" onclick="revealKey()">Reveal</button></div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- ══ ANALYTICS ══ -->
+  <div class="page" id="page-analytics">
+    <div class="sec-head">
+      <div><div class="sec-title">Analytics</div><div class="sec-sub">Price trends, category breakdown, and market intelligence</div></div>
+    </div>
+    <div class="grid g-4" id="analytics-stat-cards"></div>
+    <div class="grid g-2" style="margin-top:4px">
+      <div class="chart-card fade-up">
+        <div class="chart-head"><div class="chart-title">Price vs Market (My Price · Comp Avg · Comp Low)</div></div>
+        <canvas id="analytics-bar-chart"></canvas>
+      </div>
+      <div class="chart-card fade-up">
+        <div class="chart-head"><div class="chart-title">Category Distribution</div></div>
+        <canvas id="analytics-cat-chart"></canvas>
+        <div id="analytics-cat-legend" style="display:flex;gap:14px;margin-top:12px;flex-wrap:wrap"></div>
+      </div>
+    </div>
+    <div class="sec-head" style="margin-top:4px"><div class="sec-title">Top Movers by Price Gap</div></div>
+    <div class="tbl-wrap"><div id="analytics-movers"></div></div>
+  </div>
+
+  <!-- ══ WATCHLIST ══ -->
+  <div class="page" id="page-watchlist">
+    <div class="sec-head">
+      <div><div class="sec-title">Watchlist</div><div class="sec-sub" id="watchlist-sub">Pin products to track price changes closely</div></div>
+      <button class="btn" onclick="clearWatchlist()">Clear All</button>
+    </div>
+    <div class="grid g-4" id="watchlist-stat-cards"></div>
+    <div id="watchlist-empty" class="empty" style="display:none"><div class="empty-icon">📌</div><div class="empty-label">No products on watchlist</div><div style="font-size:12px;color:var(--text-3);margin-top:4px">Click ☆ on any product in Products to track it here</div></div>
+    <div class="tbl-wrap" id="watchlist-table-wrap">
+      <div class="tbl-hdr" style="grid-template-columns:2fr 100px 100px 100px 80px 90px 100px">
+        <div class="th">Product</div><div class="th">My Price</div><div class="th">Comp Low</div><div class="th">Comp Avg</div><div class="th">Gap</div><div class="th">Urgency</div><div class="th">Action</div>
+      </div>
+      <div id="watchlist-table"></div>
+    </div>
+  </div>
+
+  <!-- ══ OPPORTUNITIES ══ -->
+  <div class="page" id="page-opportunities">
+    <div class="sec-head">
+      <div><div class="sec-title">Opportunities</div><div class="sec-sub">Biggest price drops, arbitrage gaps, and undervalued positions</div></div>
+    </div>
+    <div class="grid g-3" id="opp-stat-cards"></div>
+    <div class="chart-card fade-up" style="margin-top:4px">
+      <div class="chart-head"><div class="chart-title">Price Gap Overview — My Price vs Comp Low vs Comp Avg</div></div>
+      <canvas id="opp-gap-chart"></canvas>
+    </div>
+    <div class="grid g-2" style="margin-top:4px">
+      <div>
+        <div class="sec-head" style="margin-bottom:12px"><div class="sec-title">🔥 Biggest Price Drops (You vs Comp Low)</div></div>
+        <div class="tbl-wrap"><div id="opp-drops"></div></div>
+      </div>
+      <div>
+        <div class="sec-head" style="margin-bottom:12px"><div class="sec-title">⚡ Raise Opportunities (You're Underpriced)</div></div>
+        <div class="tbl-wrap"><div id="opp-raises"></div></div>
+      </div>
+    </div>
+    <div class="sec-head" style="margin-top:4px"><div class="sec-title">🏆 Competitor OOS → Your Moment</div></div>
+    <div id="opp-oos-section"></div>
+  </div>
+
+  <!-- ══ DATA EXPLORER ══ -->
+  <div class="page" id="page-explorer">
+    <div class="sec-head">
+      <div><div class="sec-title">Data Explorer</div><div class="sec-sub" id="explorer-sub">Raw product data — sort, filter, and verify</div></div>
+      <div class="sec-actions">
+        <button class="btn" onclick="explorerExportCSV()">⬇ Export CSV</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:4px">
+      <input type="text" class="form-input" id="explorer-search" placeholder="Search name, ASIN, brand, category…" oninput="renderExplorer()" style="max-width:280px">
+      <select class="form-input" id="explorer-sort" onchange="renderExplorer()" style="width:auto">
+        <option value="name">Sort: Name</option>
+        <option value="price">Sort: My Price ↓</option>
+        <option value="gap">Sort: Gap ↓</option>
+        <option value="compLow">Sort: Comp Low ↓</option>
+        <option value="rating">Sort: Rating ↓</option>
+        <option value="review_count">Sort: Reviews ↓</option>
+        <option value="margin">Sort: Margin ↓</option>
+      </select>
+      <select class="form-input" id="explorer-filter" onchange="renderExplorer()" style="width:auto">
+        <option value="all">Filter: All</option>
+        <option value="in_stock">In Stock</option>
+        <option value="oos">Out of Stock</option>
+        <option value="buybox">Has Buy Box</option>
+        <option value="no_buybox">Lost Buy Box</option>
+        <option value="has_cost">Has Cost Data</option>
+      </select>
+    </div>
+    <div class="tbl-wrap">
+      <div class="tbl-hdr" style="grid-template-columns:2.5fr 90px 90px 90px 80px 70px 80px 80px 70px">
+        <div class="th">Product / ASIN</div><div class="th">My $</div><div class="th">Scraped $</div><div class="th">Cost</div><div class="th">Margin</div><div class="th">Gap</div><div class="th">Rating</div><div class="th">Reviews</div><div class="th">Stock</div>
+      </div>
+      <div id="explorer-table"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODALS -->
+<div class="modal-bg" id="add-product-modal" onclick="if(event.target===this)closeModal('add-product-modal')">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Add & Scrape Product</div>
+      <div class="modal-close" onclick="resetScrapeModal();closeModal('add-product-modal')">✕</div>
+    </div>
+    <div id="modal-products-list" style="display:none;margin-bottom:14px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-3);margin-bottom:8px">Products in this session</div>
+      <div id="modal-products-items"></div>
+    </div>
+    <div class="form-group"><label class="form-label">ASIN or Amazon URL</label><input class="form-input" id="inp-asin" placeholder="B08N5WRWNW or https://amazon.com/dp/…"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">My Price ($)</label><input class="form-input" id="inp-myprice" type="number" placeholder="29.99" step="0.01"></div>
+      <div class="form-group"><label class="form-label">Cost ($)</label><input class="form-input" id="inp-cost" type="number" placeholder="12.00" step="0.01"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Floor Price ($)</label><input class="form-input" id="inp-floor" type="number" placeholder="18.00" step="0.01"></div>
+      <div class="form-group"><label class="form-label">MAP Price ($)</label><input class="form-input" id="inp-map" type="number" placeholder="24.99" step="0.01"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Competitor Mode</label>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+        <div id="cm-brand" class="comp-mode-btn on" onclick="selectCompMode('brand')">
+          <div style="font-size:13px;font-weight:700">🏷 Brand</div>
+          <div style="font-size:11px;color:var(--text-3);margin-top:3px">Similar products from other brands</div>
+        </div>
+        <div id="cm-reseller" class="comp-mode-btn" onclick="selectCompMode('reseller')">
+          <div style="font-size:13px;font-weight:700">🔁 Reseller</div>
+          <div style="font-size:11px;color:var(--text-3);margin-top:3px">Other sellers of this exact ASIN</div>
+        </div>
+        <div id="cm-both" class="comp-mode-btn" onclick="selectCompMode('both')">
+          <div style="font-size:13px;font-weight:700">⚡ Both</div>
+          <div style="font-size:11px;color:var(--text-3);margin-top:3px">Brand + reseller combined</div>
+        </div>
+      </div>
+    </div>
+    <div id="scrape-progress" style="display:none;background:var(--surface-2);border-radius:8px;padding:12px 14px;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:8px" id="scrape-progress-title">🔄 Scraping in progress…</div>
+      <div id="scrape-log" style="font-family:monospace;font-size:11px;color:var(--text-2);max-height:140px;overflow-y:auto;line-height:1.6"></div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn" onclick="resetScrapeModal();closeModal('add-product-modal')">Cancel</button>
+      <button class="btn primary" id="btn-scrape-now" onclick="addAndScrape()">▶ Scrape Now</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="rule-modal" onclick="if(event.target===this)closeModal('rule-modal')">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">New Repricing Rule</div>
+      <div class="modal-close" onclick="closeModal('rule-modal')">✕</div>
+    </div>
+    <div class="form-group"><label class="form-label">Rule Name</label><input class="form-input" id="rule-name" placeholder="e.g. Beat Cheapest Competitor"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Condition</label><select class="form-input" id="rule-cond"><option>Competitor undercuts by more than 2%</option><option>Not owning Buy Box</option><option>Competitor is out of stock</option><option>Price gap &gt; 10%</option></select></div>
+      <div class="form-group"><label class="form-label">Action</label><select class="form-input" id="rule-action"><option>Match lowest price</option><option>Undercut by $0.01</option><option>Undercut by 1%</option><option>Raise price by 5%</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Apply To</label><select class="form-input" id="rule-apply"><option>All Products</option><option>Critical only</option></select></div>
+      <div class="form-group"><label class="form-label">Mode</label><select class="form-input" id="rule-exec"><option>Suggest only</option><option>Auto-execute</option></select></div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:6px">
+      <button class="btn" onclick="closeModal('rule-modal')">Cancel</button>
+      <button class="btn primary" onclick="saveRule()">Save Rule</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="product-detail-modal" onclick="if(event.target===this)closeModal('product-detail-modal')">
+  <div class="modal" style="width:580px">
+    <div class="modal-head">
+      <div class="modal-title" id="detail-title">Product Detail</div>
+      <div class="modal-close" onclick="closeModal('product-detail-modal')">✕</div>
+    </div>
+    <div id="detail-body"></div>
+  </div>
+</div>
+
+<div id="toast">✓ <span id="toast-msg"></span></div>
+
+<script>
+// ── STATE — all live from scraped_data.json ───────────────────────────
+let PRODUCTS = [];
+let ALERTS   = [];
+let RULES    = [];
+let ACTIVITY = [];
+let SCRAPE_META = { scraped_at: null, success_rate: 0, total: 0, success: 0 };
+let chart1, chart2, chartAnalyticsBar, chartAnalyticsCat, chartOppGap;
+let SELECTED_ASIN = 'all'; // 'all' or a specific ASIN
+
+// ── PRODUCT FILTER ────────────────────────────────────────────────────
+function getFilteredProducts() {
+  if (SELECTED_ASIN === 'all') return PRODUCTS;
+  return PRODUCTS.filter(p => p.asin === SELECTED_ASIN);
+}
+
+function selectProduct(asin) {
+  SELECTED_ASIN = asin;
+  renderAll();
+  // Re-init lazy charts
+  const page = document.querySelector('.page.on')?.id?.replace('page-','');
+  if (page === 'analytics') setTimeout(() => renderAnalytics(), 50);
+  if (page === 'opportunities') setTimeout(() => renderOpportunities(), 50);
+}
+
+function updateProductFilter() {
+  const wrap = $('product-filter');
+  const wrapDiv = $('product-filter-wrap');
+  if (!wrap || !wrapDiv) return;
+
+  // Only show if more than 1 product
+  if (PRODUCTS.length <= 1) {
+    wrapDiv.style.display = 'none';
+    SELECTED_ASIN = 'all';
+    return;
+  }
+  wrapDiv.style.display = 'block';
+
+  // Rebuild options
+  const current = SELECTED_ASIN;
+  wrap.innerHTML = '<option value="all">📦 All Products (' + PRODUCTS.length + ')</option>' +
+    PRODUCTS.map(p => `<option value="${p.asin}" ${p.asin === current ? 'selected' : ''}>${p.img} ${(p.name||p.asin).slice(0,35)} — ${fmt(p.price)}</option>`).join('');
+}
+
+// ── HELPERS ──────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const fmt = n => n != null ? '$' + parseFloat(n).toFixed(2) : '—';
+const gapColor = g => g < 0 ? 'var(--red)' : 'var(--green)';
+const urgBadge = u => ({ critical: '<span class="badge b-red">Critical</span>', high: '<span class="badge b-amber">High</span>', medium: '<span class="badge b-blue">Medium</span>', low: '<span class="badge b-gray">Low</span>' })[u] || '<span class="badge b-gray">Low</span>';
+const stockBadge = s => s === 'in' ? '<span class="badge b-green">In Stock</span>' : s === 'low' ? '<span class="badge b-amber">Low Stock</span>' : s === 'unknown' ? '<span class="badge b-gray">Unknown</span>' : '<span class="badge b-red">OOS</span>';
+
+function timeSince(isoStr) {
+  if (!isoStr) return 'unknown';
+  const diff = Math.floor((Date.now() - new Date(isoStr).getTime()) / 1000);
+  if (diff < 60) return diff + 's ago';
+  if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+  return Math.floor(diff / 86400) + 'd ago';
+}
+
+// ── THEME ────────────────────────────────────────────────────────────
+function setTheme(t, el) {
+  document.documentElement.setAttribute('data-theme', t);
+  document.querySelectorAll('.theme-pill').forEach(p => p.classList.remove('on'));
+  el.classList.add('on');
+  if (chart1) updateCharts();
+}
+
+// ── NAV ──────────────────────────────────────────────────────────────
+const PAGE_TITLES = { dashboard:'Dashboard', products:'Products', pricing:'Repricing', analytics:'Analytics', alerts:'Alerts', watchlist:'Watchlist', competitors:'Competitors', opportunities:'Opportunities', explorer:'Data Explorer', scraping:'Scraping', settings:'Settings' };
+function nav(page, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('on'));
+  $('page-' + page).classList.add('on');
+  if (el) el.classList.add('on');
+  $('tb-title').textContent = PAGE_TITLES[page] || page;
+  if ((page === 'analytics' || page === 'opportunities') && PRODUCTS.length) {
+    setTimeout(() => { if (page==='analytics') renderAnalytics(); else renderOpportunities(); }, 50);
+  }
+}
+
+// ── LOAD data from API ────────────────────────────────────────────────
+async function loadScrapedData() {
+  try {
+    const resp = await fetch('http://localhost:3000/api/data');
+    if (!resp.ok) throw new Error('API not reachable');
+    const data = await resp.json();
+
+    SCRAPE_META = { scraped_at: data.scraped_at, total: data.total, success: data.success, success_rate: data.success_rate };
+
+    const mapped = data.products.map(p => ({
+      asin:           p.asin,
+      name:           p.name           || p.asin,
+      cat:            p.cat            || 'Unknown',
+      brand:          p.brand          || null,
+      price:          p.price          || p.my_price || 0,
+      my_price:       p.my_price       || p.price    || 0,
+      scraped_price:  p.scraped_price  || null,
+      cost:           p.cost           || 0,
+      floor:          p.floor          || 0,
+      map:            p.map            || 0,
+      compLow:        p.compLow        || 0,
+      compHigh:       p.compHigh       || 0,
+      compAvg:        p.compAvg        || 0,
+      compOffers:     p.compOffers     || [],
+      sellers:        p.sellers        || 0,
+      stock:          p.stock          || 'unknown',
+      buybox:         p.buybox         || false,
+      buybox_seller:  p.buybox_seller  || null,
+      gap:            p.gap            || 0,
+      urgency:        p.urgency        || 'low',
+      img:            p.img            || '📦',
+      rating:         p.rating         || null,
+      review_count:   p.review_count   || null,
+      images:         p.images         || [],
+      bullets:        p.bullets        || [],
+      description:    p.description    || null,
+      asin_confirmed: p.asin_confirmed || null,
+      last_scraped:   p.last_scraped   || null,
+      scrape_status:  p.scrape_status  || 'ok'
+    }));
+
+    PRODUCTS.length = 0;
+    mapped.forEach(p => PRODUCTS.push(p));
+
+    // Build alerts from live data
+    buildAlerts();
+    // Build activity log
+    buildActivity();
+
+    renderAll();
+    showToast('✓ Loaded ' + mapped.length + ' product' + (mapped.length !== 1 ? 's' : '') + ' — scraped ' + timeSince(data.scraped_at));
+    return true;
+  } catch (e) {
+    console.warn('scraped_data.json not found:', e.message);
+    renderEmpty();
+    return false;
+  }
+}
+
+function buildAlerts() {
+  ALERTS = [];
+  PRODUCTS.forEach(p => {
+    if (p.urgency === 'critical' && p.gap < 0)
+      ALERTS.push({ type: 'critical', title: (p.name || p.asin).slice(0, 45) + ' — undercut!', sub: 'Comp low ' + fmt(p.compLow) + ' vs your price ' + fmt(p.price) + ' (' + p.gap + '%)', time: timeSince(p.last_scraped) });
+    if (!p.buybox)
+      ALERTS.push({ type: 'high', title: 'Buy Box lost: ' + (p.name || p.asin).slice(0, 38), sub: (p.buybox_seller || 'Competitor') + ' owns Buy Box · ' + p.asin, time: timeSince(p.last_scraped) });
+    if (p.map > 0 && p.compLow > 0 && p.compLow < p.map)
+      ALERTS.push({ type: 'critical', title: 'MAP Violation: ' + (p.name || p.asin).slice(0, 35), sub: 'Comp at ' + fmt(p.compLow) + ' — below MAP ' + fmt(p.map), time: timeSince(p.last_scraped) });
+    if (p.stock === 'oos')
+      ALERTS.push({ type: 'amber', title: 'Out of stock: ' + (p.name || p.asin).slice(0, 38), sub: 'Product unavailable · ' + p.asin, time: timeSince(p.last_scraped) });
+  });
+  updateAlertBadge();
+}
+
+function buildActivity() {
+  ACTIVITY = [];
+  PRODUCTS.forEach(p => {
+    ACTIVITY.push({ icon: p.img, asin: p.asin, msg: (p.name || p.asin).slice(0, 50) + ' — scraped at ' + fmt(p.scraped_price) + ' (your price ' + fmt(p.price) + ')', time: timeSince(p.last_scraped) });
+    if (p.compOffers && p.compOffers.length)
+      ACTIVITY.push({ icon: '🔍', asin: p.asin, msg: p.compOffers.length + ' competitors found for ' + (p.name || p.asin).slice(0, 40), time: timeSince(p.last_scraped) });
+    if (!p.buybox)
+      ACTIVITY.push({ icon: '🔔', asin: p.asin, msg: 'Buy Box alert: ' + (p.name || p.asin).slice(0, 40), time: timeSince(p.last_scraped) });
+  });
+}
+
+function updateAlertBadge() {
+  const n = ALERTS.length;
+  const badge = $('sb-alerts-count');
+  const dot = $('notif-dot');
+  if (n > 0) {
+    badge.textContent = n; badge.style.display = 'inline-block';
+    dot.style.display = 'block';
+  } else {
+    badge.style.display = 'none'; dot.style.display = 'none';
+  }
+}
+
+// ── RENDER ALL ────────────────────────────────────────────────────────
+function renderAll() {
+  updateProductFilter();
+  renderDashboard(); renderProducts(); renderAlerts(); renderScraping();
+  renderCompetitors(); renderPricing(); renderAnalytics(); renderWatchlist();
+  renderOpportunities(); renderExplorer(); updateSidebar(); initCharts();
+}
+
+function renderEmpty() {
+  const empty = '<div class="empty"><div class="empty-icon">📭</div><div class="empty-label">No data yet</div><div style="font-size:12px;color:var(--text-3);margin-top:4px">Run <code>python scraper.py</code> then click ▶ Run Scrape</div></div>';
+  const ids = ['critical-table','activity-log','products-table','alerts-list','scrape-detail','comp-matrix'];
+  ids.forEach(id => { if ($(id)) $(id).innerHTML = empty; });
+  ['stat-products','stat-critical','stat-gap','stat-buybox','stat-scrape'].forEach(id => { if ($(id)) $(id).textContent = '—'; });
+}
+
+function updateSidebar() {
+  $('sb-asin-count').textContent = PRODUCTS.length + ' product' + (PRODUCTS.length !== 1 ? 's' : '') + ' tracked';
+  const badge = $('sb-products-count');
+  if (PRODUCTS.length > 0) { badge.textContent = PRODUCTS.length; badge.style.display = 'inline-block'; }
+  else badge.style.display = 'none';
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────
+function renderDashboard() {
+  if (!PRODUCTS.length) { renderEmpty(); return; }
+  const FP = getFilteredProducts();
+  if (!FP.length) { renderEmpty(); return; }
+
+  const critCount = FP.filter(p => p.urgency === 'critical').length;
+  const gaps      = FP.filter(p => p.gap !== 0).map(p => p.gap);
+  const avgGap    = gaps.length ? (gaps.reduce((a, b) => a + b, 0) / gaps.length).toFixed(1) : 0;
+  const bbCount   = FP.filter(p => p.buybox).length;
+
+  $('stat-products').textContent = FP.length;
+  $('stat-products-sub').textContent = SCRAPE_META.scraped_at ? 'Last scraped ' + timeSince(SCRAPE_META.scraped_at) : 'Loaded';
+  $('stat-critical').textContent = critCount;
+  $('stat-gap').textContent = (avgGap > 0 ? '+' : '') + avgGap + '%';
+  $('stat-buybox').textContent = bbCount + '/' + FP.length;
+  $('stat-scrape').textContent = SCRAPE_META.success_rate ? SCRAPE_META.success_rate + '%' : '—';
+  $('stat-scrape-sub').textContent = SCRAPE_META.scraped_at ? timeSince(SCRAPE_META.scraped_at) : 'Never';
+
+  const priority = [...FP].sort((a, b) => {
+    const uOrder = { critical: 0, high: 1, medium: 2, low: 3 };
+    return (uOrder[a.urgency] || 3) - (uOrder[b.urgency] || 3);
+  }).slice(0, 6);
+
+  $('critical-table').innerHTML = priority.length ? priority.map(p => `
+    <div class="tbl-row" style="grid-template-columns:1fr 80px 80px 80px 90px" onclick="showProductDetail('${p.asin}')">
+      <div class="tc" style="flex-direction:column;align-items:flex-start;gap:2px">
+        <span style="font-weight:600;font-size:12.5px">${p.img} ${(p.name || p.asin).slice(0, 32)}</span>
+        <span class="mono" style="font-size:10px;color:var(--text-3)">${p.asin}</span>
+      </div>
+      <div class="tc mono" style="font-weight:600">${fmt(p.price)}</div>
+      <div class="tc mono" style="color:var(--red)">${p.compLow > 0 ? fmt(p.compLow) : '—'}</div>
+      <div class="tc mono" style="font-weight:700;color:${p.gap === 0 ? 'var(--text-3)' : gapColor(p.gap)}">${p.gap > 0 ? '+' : ''}${p.gap}%</div>
+      <div class="tc">${urgBadge(p.urgency)}</div>
+    </div>`).join('') : '<div class="empty"><div class="empty-icon">✅</div><div class="empty-label">No critical products</div></div>';
+
+  // Activity log — filter to selected product if needed
+  const filteredActivity = SELECTED_ASIN === 'all' ? ACTIVITY :
+    ACTIVITY.filter(a => a.asin === SELECTED_ASIN);
+  $('activity-log').innerHTML = (filteredActivity.length ? filteredActivity : ACTIVITY).slice(0, 8).map(a => `
+    <div class="alert-item">
+      <div style="font-size:17px;flex-shrink:0;margin-top:1px">${a.icon}</div>
+      <div style="flex:1"><div class="alert-title">${a.msg}</div></div>
+      <div class="alert-time">${a.time}</div>
+    </div>`).join('');
+}
+
+// ── PRODUCTS ──────────────────────────────────────────────────────────
+function renderProducts(f = 'all', query = '') {
+  let p = [...PRODUCTS];
+  if (f === 'critical') p = p.filter(x => x.urgency === 'critical');
+  else if (f === 'high') p = p.filter(x => x.urgency === 'high');
+  else if (f === 'oos') p = p.filter(x => x.stock === 'oos');
+  else if (f === 'map') p = p.filter(x => x.map > 0 && x.compLow > 0 && x.compLow < x.map);
+  else if (f === 'buybox') p = p.filter(x => !x.buybox);
+  if (query) p = p.filter(x => (x.name || '').toLowerCase().includes(query.toLowerCase()) || x.asin.includes(query.toUpperCase()));
+
+  $('products-sub').textContent = p.length + ' of ' + PRODUCTS.length + ' products';
+
+  $('products-table').innerHTML = p.length ? p.map(pr => `
+    <div class="tbl-row" style="grid-template-columns:2fr 100px 100px 70px 80px 90px 100px 100px">
+      <div class="tc" style="flex-direction:column;align-items:flex-start;gap:2px">
+        <span style="font-weight:700">${pr.img} ${pr.name || pr.asin}</span>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span class="mono" style="font-size:10px;color:var(--text-3)">${pr.asin} · ${pr.cat}</span>
+          ${pr.brand ? '<span style="font-size:10px;color:var(--blue);font-weight:600">' + pr.brand + '</span>' : ''}
+          ${pr.rating ? '<span style="font-size:10px;color:var(--amber)">★ ' + pr.rating + (pr.review_count ? ' (' + pr.review_count.toLocaleString() + ')' : '') + '</span>' : ''}
+        </div>
+      </div>
+      <div class="tc mono" style="font-weight:600">${fmt(pr.price)}</div>
+      <div class="tc mono" style="color:${pr.buybox ? 'var(--green)' : 'var(--red)'}">
+        ${pr.buybox ? '✓ ' : '✗ '}${pr.compLow > 0 ? fmt(pr.compLow) : '—'}
+        ${pr.buybox_seller && !pr.buybox ? '<span style="font-size:9px;color:var(--text-3);display:block">' + pr.buybox_seller.slice(0, 14) + '</span>' : ''}
+      </div>
+      <div class="tc mono">${pr.sellers || '—'}</div>
+      <div class="tc mono" style="font-weight:700;color:${pr.gap === 0 ? 'var(--text-3)' : gapColor(pr.gap)}">${pr.gap > 0 ? '+' : ''}${pr.gap}%</div>
+      <div class="tc">${stockBadge(pr.stock)}</div>
+      <div class="tc">${urgBadge(pr.urgency)}</div>
+      <div class="tc"><button class="btn" style="font-size:11px;padding:5px 10px" onclick="showProductDetail('${pr.asin}')">Details</button><button class="btn" style="font-size:11px;padding:5px 8px;margin-left:4px;${WATCHLIST.has(pr.asin)?'color:var(--amber);border-color:var(--amber)':''}" onclick="event.stopPropagation();toggleWatch('${pr.asin}')" title="Watchlist">${WATCHLIST.has(pr.asin)?'★':'☆'}</button><button class="btn" style="font-size:11px;padding:5px 8px;margin-left:4px;color:var(--red)" onclick="event.stopPropagation();deleteProduct('${pr.asin}')" title="Remove">✕</button></div>
+    </div>`).join('')
+    : '<div class="empty"><div class="empty-icon">📭</div><div class="empty-label">No products match filter</div></div>';
+}
+
+function filterProd(f, btn) {
+  document.querySelectorAll('#page-products .pill').forEach(x => x.classList.remove('on'));
+  btn.classList.add('on');
+  renderProducts(f);
+}
+
+let _searchTimer;
+function searchProducts(q) {
+  clearTimeout(_searchTimer);
+  _searchTimer = setTimeout(() => renderProducts('all', q), 200);
+}
+
+// ── ALERTS ───────────────────────────────────────────────────────────
+function renderAlerts() {
+  const cols = { critical: 'var(--red)', high: 'var(--amber)', amber: 'var(--amber)', info: 'var(--blue)' };
+  const critN  = ALERTS.filter(a => a.type === 'critical').length;
+  const highN  = ALERTS.filter(a => a.type === 'high').length;
+  const infoN  = ALERTS.filter(a => a.type === 'info' || a.type === 'amber').length;
+
+  $('alerts-sub').textContent = ALERTS.length + ' alert' + (ALERTS.length !== 1 ? 's' : '');
+
+  $('alert-stat-cards').innerHTML = `
+    <div class="card"><div class="card-accent" style="background:var(--red)"></div><div class="card-label">Critical</div><div class="card-val" style="color:var(--red)">${critN}</div></div>
+    <div class="card"><div class="card-accent" style="background:var(--amber)"></div><div class="card-label">High</div><div class="card-val" style="color:var(--amber)">${highN}</div></div>
+    <div class="card"><div class="card-accent" style="background:var(--blue)"></div><div class="card-label">Info</div><div class="card-val" style="color:var(--blue)">${infoN}</div></div>`;
+
+  $('alerts-list').innerHTML = ALERTS.length ? ALERTS.map(a => `
+    <div class="alert-item">
+      <div class="alert-dot" style="background:${cols[a.type] || 'var(--text-3)'}"></div>
+      <div style="flex:1">
+        <div class="alert-title">${a.title}</div>
+        <div class="alert-sub">${a.sub}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        <span class="alert-time">${a.time}</span>
+      </div>
+    </div>`).join('')
+    : '<div class="empty"><div class="empty-icon">✅</div><div class="empty-label">No alerts</div></div>';
+}
+
+// ── SCRAPING ─────────────────────────────────────────────────────────
+function renderScraping() {
+  const totalComps = PRODUCTS.reduce((n, p) => n + (p.compOffers ? p.compOffers.length : 0), 0);
+  $('sc-lastrun').textContent = SCRAPE_META.scraped_at ? timeSince(SCRAPE_META.scraped_at) : '—';
+  $('sc-products').textContent = SCRAPE_META.success || '—';
+  $('sc-rate').textContent = SCRAPE_META.success_rate ? SCRAPE_META.success_rate + '%' : '—';
+  $('sc-comps').textContent = totalComps || '—';
+
+  $('scrape-detail').innerHTML = PRODUCTS.length ? PRODUCTS.map(p => `
+    <div class="tbl-row" style="grid-template-columns:2fr 100px 100px 100px 100px 100px" onclick="showProductDetail('${p.asin}')">
+      <div class="tc" style="flex-direction:column;align-items:flex-start;gap:2px">
+        <span style="font-weight:600">${p.img} ${(p.name || p.asin).slice(0, 45)}</span>
+        <span class="mono" style="font-size:10px;color:var(--text-3)">${p.asin}</span>
+      </div>
+      <div class="tc mono" style="color:var(--cyan);font-weight:700">${p.scraped_price ? fmt(p.scraped_price) : '—'}</div>
+      <div class="tc mono" style="font-weight:700">${fmt(p.price)}</div>
+      <div class="tc" style="color:var(--amber)">${p.rating ? '★ ' + p.rating : '—'}</div>
+      <div class="tc">${stockBadge(p.stock)}</div>
+      <div class="tc"><span class="badge ${p.scrape_status === 'ok' ? 'b-green' : 'b-red'}">${p.scrape_status || '—'}</span></div>
+    </div>`).join('')
+    : '<div class="empty"><div class="empty-icon">📭</div><div class="empty-label">Run python scraper.py</div></div>';
+}
+
+// ── COMPETITORS ───────────────────────────────────────────────────────
+function renderCompetitors() {
+  const FP = getFilteredProducts();
+  const allComps = FP.flatMap(p => (p.compOffers || []).map(c => ({ ...c, myPrice: p.price, myProduct: p })));
+
+  if (!allComps.length) {
+    $('comp-cards').innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🔍</div><div class="empty-label">No competitor data yet</div><div style="font-size:12px;color:var(--text-3);margin-top:4px">Run python scraper.py — competitors are scraped from Amazon search results</div></div>';
+    $('comp-matrix').innerHTML = '<div class="empty"><div class="empty-icon">📊</div><div class="empty-label">Run scraper.py to populate</div></div>';
+    return;
+  }
+
+  const myPrice  = PRODUCTS[0]?.price || 0;
+  const cheaper  = allComps.filter(c => c.is_cheaper);
+  const pricier  = allComps.filter(c => !c.is_cheaper);
+  const prices   = allComps.map(c => c.price).filter(Boolean);
+  const low      = prices.length ? Math.min(...prices) : 0;
+  const avg      = prices.length ? prices.reduce((a, b) => a + b, 0) / prices.length : 0;
+
+  $('comp-sub').textContent = allComps.length + ' competitors found from Amazon search';
+
+  $('comp-cards').innerHTML = `
+    <div class="card"><div class="card-accent" style="background:var(--red)"></div><div class="card-label">Cheaper Than You</div><div class="card-val" style="color:var(--red)">${cheaper.length}</div><div class="card-sub">Undercutting ${fmt(myPrice)}</div></div>
+    <div class="card"><div class="card-accent" style="background:var(--green)"></div><div class="card-label">You Beat</div><div class="card-val" style="color:var(--green)">${pricier.length}</div><div class="card-sub">Priced above you</div></div>
+    <div class="card"><div class="card-accent" style="background:var(--amber)"></div><div class="card-label">Market Low</div><div class="card-val" style="color:var(--amber);font-size:22px">${fmt(low)}</div><div class="card-sub">Cheapest competitor</div></div>
+    <div class="card"><div class="card-accent" style="background:var(--blue)"></div><div class="card-label">Market Avg</div><div class="card-val" style="color:var(--blue);font-size:22px">${fmt(avg.toFixed(2))}</div><div class="card-sub">Across ${allComps.length} competitors</div></div>`;
+
+  $('comp-matrix').innerHTML = allComps.map(c => {
+    const gap    = c.myPrice > 0 ? ((c.myPrice - c.price) / c.price * 100).toFixed(1) : 0;
+    const gapCol = gap > 0 ? 'var(--green)' : gap < 0 ? 'var(--red)' : 'var(--text-3)';
+    const pos    = c.price < c.myPrice * 0.9 ? 'Cheapest' : c.price < c.myPrice ? 'Below' : 'Above';
+    const posCol = pos === 'Cheapest' ? 'var(--red)' : pos === 'Below' ? 'var(--amber)' : 'var(--green)';
+    return `<div class="tbl-row" style="grid-template-columns:2.5fr 90px 90px 80px 80px 110px">
+      <div class="tc" style="flex-direction:column;align-items:flex-start;gap:2px">
+        <span style="font-weight:600;font-size:12.5px">${(c.name || c.asin || 'Unknown').slice(0, 55)}</span>
+        <div style="display:flex;gap:6px;align-items:center">
+          ${c.asin ? '<span class="mono" style="font-size:10px;color:var(--text-3)">' + c.asin + '</span>' : ''}
+          ${c.rating ? '<span style="font-size:10px;color:var(--amber)">★' + c.rating + '</span>' : ''}
+          ${c.prime ? '<span class="badge b-blue" style="font-size:9px">Prime</span>' : ''}
+          ${c.sponsored ? '<span class="badge b-gray" style="font-size:9px">Ad</span>' : ''}
+        </div>
+      </div>
+      <div class="tc mono" style="font-weight:700;color:var(--cyan)">${fmt(c.myPrice)}</div>
+      <div class="tc mono" style="font-weight:700;color:${c.is_cheaper ? 'var(--red)' : 'var(--green)'}">${fmt(c.price)}</div>
+      <div class="tc mono" style="font-weight:700;color:${gapCol}">${gap > 0 ? '+' : ''}${gap}%</div>
+      <div class="tc" style="font-size:12px;color:var(--text-2)">${c.reviews ? c.reviews.toLocaleString() : '—'}</div>
+      <div class="tc">
+        <span class="badge" style="background:${posCol}18;color:${posCol};border:1.5px solid ${posCol}44">${pos}</span>
+        ${c.url ? `<a href="${c.url}" target="_blank" style="margin-left:8px;font-size:11px;font-weight:600;color:var(--blue);text-decoration:none;padding:3px 8px;border:1.5px solid var(--blue-border);border-radius:6px;background:var(--blue-soft)" onclick="event.stopPropagation()">View ↗</a>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── REPRICING ─────────────────────────────────────────────────────────
+function renderPricing() {
+  if (!RULES.length) {
+    $('repricing-rules').innerHTML = '<div class="empty"><div class="empty-icon">⚙️</div><div class="empty-label">No rules yet — click + New Rule</div></div>';
+  } else {
+    $('repricing-rules').innerHTML = RULES.map((r, i) => `
+      <div class="rule-card">
+        <div class="rule-head">
+          <div><span class="rule-name">${r.name}</span></div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="badge ${r.exec === 'Auto-execute' ? 'b-green' : 'b-amber'}">${r.exec}</span>
+            <button class="btn" style="font-size:11px;padding:3px 9px;color:var(--red)" onclick="deleteRule(${i})">Remove</button>
+          </div>
+        </div>
+        <div class="rule-chain">
+          <span class="rule-node">IF ${r.cond}</span>
+          <span class="rule-arrow">→</span>
+          <span class="rule-node" style="color:var(--blue)">${r.action}</span>
+          <span class="rule-arrow">→</span>
+          <span class="rule-node" style="color:var(--text-3)">${r.apply}</span>
+        </div>
+      </div>`).join('');
+  }
+
+  // Live reprice suggestions based on real product data
+  const suggestions = PRODUCTS
+    .filter(p => p.compLow > 0 && p.price > 0)
+    .map(p => {
+      const margin = p.cost > 0 ? p.price - p.cost : null;
+      let action = null, badge = '', newPrice = null;
+      if (!p.buybox && p.compLow > 0 && p.compLow > (p.floor || 0)) {
+        newPrice = Math.max(p.compLow - 0.01, p.floor || 0);
+        action = 'Match Buy Box: reprice to ' + fmt(newPrice);
+        badge = 'b-red';
+      } else if (p.gap > 10) {
+        newPrice = Math.min(p.price * 1.05, p.compHigh || p.price * 1.1);
+        action = 'Room to raise: could go to ' + fmt(newPrice);
+        badge = 'b-green';
+      }
+      if (!action) return null;
+      return { p, action, badge, newPrice, margin };
+    })
+    .filter(Boolean);
+
+  $('reprice-suggestions').innerHTML = suggestions.length ? `
+    <div class="tbl-hdr" style="grid-template-columns:2fr 100px 100px 1fr 120px">
+      <div class="th">Product</div><div class="th">My Price</div><div class="th">Comp Low</div><div class="th">Suggestion</div><div class="th">Action</div>
+    </div>` + suggestions.map(s => `
+    <div class="tbl-row" style="grid-template-columns:2fr 100px 100px 1fr 120px">
+      <div class="tc" style="flex-direction:column;align-items:flex-start;gap:2px">
+        <span style="font-weight:600">${s.p.img} ${(s.p.name || s.p.asin).slice(0, 35)}</span>
+        <span class="mono" style="font-size:10px;color:var(--text-3)">${s.p.asin}</span>
+      </div>
+      <div class="tc mono" style="font-weight:700">${fmt(s.p.price)}</div>
+      <div class="tc mono" style="color:var(--red)">${fmt(s.p.compLow)}</div>
+      <div class="tc"><span class="badge ${s.badge}" style="white-space:normal;line-height:1.4">${s.action}</span></div>
+      <div class="tc"><button class="btn primary" style="font-size:11px;padding:5px 10px" onclick="showToast('Applied: ${s.action.slice(0,30)}…')">Apply</button></div>
+    </div>`).join('')
+    : '<div class="empty"><div class="empty-icon">✅</div><div class="empty-label">No reprice suggestions — pricing looks good</div></div>';
+}
+
+// ── CHARTS ────────────────────────────────────────────────────────────
+function initCharts() {
+  if (!PRODUCTS.length) return;
+  const c = getChartColors();
+
+  // Destroy existing
+  if (chart1) { chart1.destroy(); chart1 = null; }
+  if (chart2) { chart2.destroy(); chart2 = null; }
+
+  // Bar chart: my price vs comp low vs comp high
+  const labels = PRODUCTS.map(p => (p.name || p.asin).slice(0, 15));
+  chart1 = new Chart($('price-chart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'My Price', data: PRODUCTS.map(p => p.price), backgroundColor: 'rgba(59,130,246,.7)', borderRadius: 4 },
+        { label: 'Comp Low', data: PRODUCTS.map(p => p.compLow || null), backgroundColor: 'rgba(239,68,68,.6)', borderRadius: 4 },
+        { label: 'Comp High', data: PRODUCTS.map(p => p.compHigh || null), backgroundColor: 'rgba(16,185,129,.4)', borderRadius: 4 },
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { labels: { color: c.legend, font: { family: 'Inter', size: 11 }, boxWidth: 10, padding: 12 } } }, scales: { x: { grid: { color: c.grid }, ticks: { color: c.tick, font: { size: 10 } } }, y: { grid: { color: c.grid }, ticks: { color: c.tick, font: { size: 10 }, callback: v => '$' + v } } } }
+  });
+
+  // Donut: urgency breakdown
+  const counts = { critical: 0, high: 0, medium: 0, low: 0 };
+  PRODUCTS.forEach(p => { counts[p.urgency] = (counts[p.urgency] || 0) + 1; });
+  const dLabels = Object.keys(counts).filter(k => counts[k] > 0);
+  const dData   = dLabels.map(k => counts[k]);
+  const dColors = { critical: '#ef4444', high: '#f59e0b', medium: '#3b82f6', low: '#10b981' };
+
+  chart2 = new Chart($('donut-chart').getContext('2d'), {
+    type: 'doughnut',
+    data: { labels: dLabels, datasets: [{ data: dData, backgroundColor: dLabels.map(k => dColors[k]), borderWidth: 0, hoverOffset: 6 }] },
+    options: { responsive: true, maintainAspectRatio: true, cutout: '70%', plugins: { legend: { display: false } } }
+  });
+
+  $('donut-legend').innerHTML = dLabels.map(k => `
+    <div style="display:flex;align-items:center;gap:7px;font-size:12.5px">
+      <div style="width:10px;height:10px;border-radius:50%;background:${dColors[k]}"></div>
+      <span style="color:var(--text-2);text-transform:capitalize">${k} <strong style="color:var(--text-1)">${counts[k]}</strong></span>
+    </div>`).join('');
+}
+
+function getChartColors() {
+  const t = document.documentElement.getAttribute('data-theme');
+  return { grid:t==='dark'?'rgba(31,45,68,.6)':'rgba(180,190,220,.4)', tick:t==='dark'?'#4a5a78':'#8a9ab8', legend:t==='dark'?'#8a9bc0':'#4a5878' };
+}
+function initCharts() { if (!PRODUCTS.length) return; initDashboardCharts(); }
+function initDashboardCharts() {
+  const FP = getFilteredProducts();
+  if (!FP.length) return;
+  const c = getChartColors();
+  if (chart1) { chart1.destroy(); chart1=null; }
+  if (chart2) { chart2.destroy(); chart2=null; }
+  if (FP.length === 1) {
+    const p = FP[0], offers = p.compOffers||[];
+    const compLabels = ['My Price',...offers.slice(0,7).map(o=>(o.name||o.asin||'Comp').slice(0,18))];
+    const compData   = [p.price,...offers.slice(0,7).map(o=>o.price)];
+    const compColors = ['rgba(59,130,246,.8)',...offers.slice(0,7).map(o=>o.price<p.price?'rgba(239,68,68,.65)':'rgba(16,185,129,.55)')];
+    chart1 = new Chart($('price-chart').getContext('2d'), { type:'bar', data:{ labels:compLabels, datasets:[{ label:'Price', data:compData, backgroundColor:compColors, borderRadius:4 }] }, options:{ indexAxis:'y', responsive:true, maintainAspectRatio:true, plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>' $'+ctx.parsed.x.toFixed(2)}} }, scales:{ x:{grid:{color:c.grid},ticks:{color:c.tick,font:{size:10},callback:v=>'$'+v}}, y:{grid:{color:c.grid},ticks:{color:c.tick,font:{size:10}}} } } });
+  } else {
+    const labels = FP.map(p=>(p.name||p.asin).slice(0,14));
+    chart1 = new Chart($('price-chart').getContext('2d'), { type:'bar', data:{ labels, datasets:[ {label:'My Price',data:FP.map(p=>p.price||null),backgroundColor:'rgba(59,130,246,.75)',borderRadius:4}, {label:'Comp Low',data:FP.map(p=>p.compLow||null),backgroundColor:'rgba(239,68,68,.6)',borderRadius:4}, {label:'Comp High',data:FP.map(p=>p.compHigh||null),backgroundColor:'rgba(16,185,129,.45)',borderRadius:4} ] }, options:{ responsive:true, maintainAspectRatio:true, plugins:{legend:{labels:{color:c.legend,font:{family:'Inter',size:11},boxWidth:10,padding:12}}}, scales:{x:{grid:{color:c.grid},ticks:{color:c.tick,font:{size:10}}},y:{grid:{color:c.grid},ticks:{color:c.tick,font:{size:10},callback:v=>'$'+v}}} } });
+  }
+  const counts={critical:0,high:0,medium:0,low:0};
+  FP.forEach(p=>{ counts[p.urgency]=(counts[p.urgency]||0)+1; });
+  const dLabels=Object.keys(counts).filter(k=>counts[k]>0);
+  const dColors={critical:'#ef4444',high:'#f59e0b',medium:'#3b82f6',low:'#10b981'};
+  chart2 = new Chart($('donut-chart').getContext('2d'), { type:'doughnut', data:{ labels:dLabels, datasets:[{data:dLabels.map(k=>counts[k]),backgroundColor:dLabels.map(k=>dColors[k]),borderWidth:0,hoverOffset:6}] }, options:{ responsive:true, maintainAspectRatio:true, cutout:'70%', plugins:{legend:{display:false}} } });
+  $('donut-legend').innerHTML = dLabels.map(k=>`<div style="display:flex;align-items:center;gap:7px;font-size:12.5px"><div style="width:10px;height:10px;border-radius:50%;background:${dColors[k]}"></div><span style="color:var(--text-2);text-transform:capitalize">${k} <strong style="color:var(--text-1)">${counts[k]}</strong></span></div>`).join('');
+}
+function updateCharts() {
+  const c = getChartColors();
+  [chart1,chart2,chartAnalyticsBar,chartAnalyticsCat,chartOppGap].forEach(ch => {
+    if (!ch) return;
+    if (ch.options.scales?.x) { ch.options.scales.x.grid.color=c.grid; ch.options.scales.x.ticks.color=c.tick; }
+    if (ch.options.scales?.y) { ch.options.scales.y.grid.color=c.grid; ch.options.scales.y.ticks.color=c.tick; }
+    if (ch.options.plugins?.legend?.labels) ch.options.plugins.legend.labels.color=c.legend;
+    ch.update();
+  });
+}
+
+// ── MISC ──────────────────────────────────────────────────────────────
+function showToast(msg) { const t=$('toast'); $('toast-msg').textContent=msg; t.style.transform='translateY(0)'; t.style.opacity='1'; setTimeout(()=>{ t.style.transform='translateY(80px)'; t.style.opacity='0'; },3500); }
+function openModal(id)  { $(id).classList.add('on'); }
+function closeModal(id) { $(id).classList.remove('on'); }
+function revealKey() {
+  const el=$('api-key-display');
+  const stored=localStorage.getItem('syphoon_key')||'';
+  if (el.textContent.includes('•')) el.textContent=stored||'(no key saved — enter in Settings)';
+  else el.textContent=stored?stored.slice(0,8)+'••••••••':'••••••••••••••••';
+}
+function saveSettings() {
+  const floor=$('setting-floor-margin')?.value;
+  const reduction=$('setting-max-reduction')?.value;
+  if (floor) localStorage.setItem('setting_floor_margin', floor);
+  if (reduction) localStorage.setItem('setting_max_reduction', reduction);
+}
+function loadSettings() {
+  const floor=localStorage.getItem('setting_floor_margin');
+  const reduction=localStorage.getItem('setting_max_reduction');
+  if (floor && $('setting-floor-margin')) $('setting-floor-margin').value=floor;
+  if (reduction && $('setting-max-reduction')) $('setting-max-reduction').value=reduction;
+}
+
+document.addEventListener('DOMContentLoaded', () => { loadSettings(); });
+
+// ── ANALYTICS ─────────────────────────────────────────────────────────
+function renderAnalytics() {
+  const FP = getFilteredProducts();
+  if (!FP.length) { ['analytics-stat-cards','analytics-movers'].forEach(id=>{if($(id))$(id).innerHTML='<div class="empty"><div class="empty-icon">📊</div><div class="empty-label">No data yet</div></div>';}); return; }
+  const prices=FP.map(p=>p.price).filter(Boolean);
+  const avgMyPrice=prices.length?(prices.reduce((a,b)=>a+b,0)/prices.length).toFixed(2):0;
+  const allCompPrices=FP.flatMap(p=>p.compOffers?p.compOffers.map(c=>c.price):[]).filter(Boolean);
+  const marketAvg=allCompPrices.length?(allCompPrices.reduce((a,b)=>a+b,0)/allCompPrices.length).toFixed(2):0;
+  const margins=FP.filter(p=>p.cost>0&&p.price>0).map(p=>((p.price-p.cost)/p.price*100));
+  const avgMargin=margins.length?(margins.reduce((a,b)=>a+b,0)/margins.length).toFixed(1):null;
+  const ratedProds=FP.filter(p=>p.rating);
+  const avgRating=ratedProds.length?(ratedProds.reduce((a,p)=>a+p.rating,0)/ratedProds.length).toFixed(1):null;
+  $('analytics-stat-cards').innerHTML=`
+    <div class="card"><div class="card-accent" style="background:var(--blue)"></div><div class="card-label">Avg My Price</div><div class="card-val" style="color:var(--blue);font-size:24px">$${avgMyPrice}</div><div class="card-sub">Across ${FP.length} products</div></div>
+    <div class="card"><div class="card-accent" style="background:var(--cyan)"></div><div class="card-label">Market Avg</div><div class="card-val" style="color:var(--cyan);font-size:24px">${marketAvg>0?'$'+marketAvg:'—'}</div><div class="card-sub">All competitor prices</div></div>
+    <div class="card"><div class="card-accent" style="background:var(--green)"></div><div class="card-label">Avg Margin</div><div class="card-val" style="color:var(--green);font-size:24px">${avgMargin?avgMargin+'%':'—'}</div><div class="card-sub">${margins.length} products w/ cost data</div></div>
+    <div class="card"><div class="card-accent" style="background:var(--amber)"></div><div class="card-label">Avg Rating</div><div class="card-val" style="color:var(--amber);font-size:24px">${avgRating?'★ '+avgRating:'—'}</div><div class="card-sub">${ratedProds.length} rated products</div></div>`;
+  const movers=[...FP].filter(p=>p.gap!==0).sort((a,b)=>Math.abs(b.gap)-Math.abs(a.gap)).slice(0,10);
+  $('analytics-movers').innerHTML=movers.length?`<div class="tbl-hdr" style="grid-template-columns:2.5fr 100px 100px 100px 80px"><div class="th">Product</div><div class="th">My Price</div><div class="th">Comp Low</div><div class="th">Comp Avg</div><div class="th">Gap</div></div>`+movers.map(p=>`<div class="tbl-row" style="grid-template-columns:2.5fr 100px 100px 100px 80px" onclick="showProductDetail('${p.asin}')"><div class="tc" style="flex-direction:column;align-items:flex-start;gap:2px"><span style="font-weight:600">${p.img} ${(p.name||p.asin).slice(0,40)}</span><span class="mono" style="font-size:10px;color:var(--text-3)">${p.asin} · ${p.brand||p.cat}</span></div><div class="tc mono" style="font-weight:700">${fmt(p.price)}</div><div class="tc mono" style="color:var(--red)">${p.compLow>0?fmt(p.compLow):'—'}</div><div class="tc mono">${p.compAvg>0?fmt(p.compAvg):'—'}</div><div class="tc mono" style="font-weight:800;color:${gapColor(p.gap)}">${p.gap>0?'+':''}${p.gap}%</div></div>`).join(''):'<div class="empty"><div class="empty-icon">📈</div><div class="empty-label">No gap data yet</div></div>';
+  if (chartAnalyticsBar){chartAnalyticsBar.destroy();chartAnalyticsBar=null;}
+  if (chartAnalyticsCat){chartAnalyticsCat.destroy();chartAnalyticsCat=null;}
+  const c=getChartColors();
+  // Single product: show each competitor as their own bar
+  if (FP.length === 1) {
+    const p=FP[0], offers=(p.compOffers||[]).filter(o=>o.price>0).slice(0,10);
+    const labels=['★ My Price',...offers.map(o=>(o.name||o.asin||'Comp').slice(0,20))];
+    const data=[p.price,...offers.map(o=>o.price)];
+    const colors=['rgba(59,130,246,.85)',...offers.map(o=>o.price<p.price?'rgba(239,68,68,.7)':'rgba(16,185,129,.6)')];
+    chartAnalyticsBar=new Chart($('analytics-bar-chart').getContext('2d'),{type:'bar',data:{labels,datasets:[{label:'Price',data,backgroundColor:colors,borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' $'+ctx.parsed.x.toFixed(2)}}},scales:{x:{grid:{color:c.grid},ticks:{color:c.tick,font:{size:10},callback:v=>'$'+v}},y:{grid:{color:c.grid},ticks:{color:c.tick,font:{size:10}}}}}});
+    $('analytics-bar-chart').style.maxHeight=Math.max(220,labels.length*32)+'px';
+  } else {
+    const labels=FP.map(p=>(p.name||p.asin).slice(0,14));
+    chartAnalyticsBar=new Chart($('analytics-bar-chart').getContext('2d'),{type:'bar',data:{labels,datasets:[{label:'My Price',data:FP.map(p=>p.price||null),backgroundColor:'rgba(59,130,246,.75)',borderRadius:4},{label:'Comp Avg',data:FP.map(p=>p.compAvg||null),backgroundColor:'rgba(6,182,212,.6)',borderRadius:4},{label:'Comp Low',data:FP.map(p=>p.compLow||null),backgroundColor:'rgba(239,68,68,.55)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{labels:{color:c.legend,font:{family:'Inter',size:11},boxWidth:10,padding:12}}},scales:{x:{grid:{color:c.grid},ticks:{color:c.tick,font:{size:10}}},y:{grid:{color:c.grid},ticks:{color:c.tick,font:{size:10},callback:v=>'$'+v}}}}});
+  }
+  const catMap={};FP.forEach(p=>{const k=p.cat||'Unknown';catMap[k]=(catMap[k]||0)+1;});
+  const catLabels=Object.keys(catMap);
+  const catColors=['#3b82f6','#06b6d4','#10b981','#f59e0b','#8b5cf6','#ef4444','#ec4899','#84cc16'];
+  chartAnalyticsCat=new Chart($('analytics-cat-chart').getContext('2d'),{type:'doughnut',data:{labels:catLabels,datasets:[{data:catLabels.map(k=>catMap[k]),backgroundColor:catColors.slice(0,catLabels.length),borderWidth:0,hoverOffset:5}]},options:{responsive:true,maintainAspectRatio:true,cutout:'65%',plugins:{legend:{display:false}}}});
+  $('analytics-cat-legend').innerHTML=catLabels.map((k,i)=>`<div style="display:flex;align-items:center;gap:6px;font-size:12px"><div style="width:9px;height:9px;border-radius:50%;background:${catColors[i]||'#888'}"></div><span style="color:var(--text-2)">${k} <strong style="color:var(--text-1)">${catMap[k]}</strong></span></div>`).join('');
+}
+// ── WATCHLIST ─────────────────────────────────────────────────────────
+let WATCHLIST=new Set();
+function toggleWatch(asin) {
+  if(WATCHLIST.has(asin)){WATCHLIST.delete(asin);showToast('Removed from Watchlist');}
+  else{WATCHLIST.add(asin);showToast('Added to Watchlist ✓');}
+  renderWatchlist();renderProducts();
+  const badge=$('sb-watchlist-count');
+  if(WATCHLIST.size>0){badge.textContent=WATCHLIST.size;badge.style.display='inline-block';}
+  else badge.style.display='none';
+}
+function clearWatchlist(){WATCHLIST.clear();renderWatchlist();renderProducts();$('sb-watchlist-count').style.display='none';showToast('Watchlist cleared');}
+function renderWatchlist() {
+  const watched=PRODUCTS.filter(p=>WATCHLIST.has(p.asin));
+  $('watchlist-sub').textContent=WATCHLIST.size+' product'+(WATCHLIST.size!==1?'s':'')+' tracked';
+  if(!watched.length){$('watchlist-empty').style.display='flex';$('watchlist-table-wrap').style.display='none';$('watchlist-stat-cards').innerHTML='';return;}
+  $('watchlist-empty').style.display='none';$('watchlist-table-wrap').style.display='block';
+  const gapped=watched.filter(p=>p.gap!==0);
+  const avgGap=gapped.length?gapped.reduce((a,p)=>a+p.gap,0)/gapped.length:0;
+  const critN=watched.filter(p=>p.urgency==='critical'||p.urgency==='high').length;
+  $('watchlist-stat-cards').innerHTML=`
+    <div class="card"><div class="card-accent" style="background:var(--blue)"></div><div class="card-label">Watching</div><div class="card-val" style="color:var(--blue)">${watched.length}</div></div>
+    <div class="card"><div class="card-accent" style="background:var(--red)"></div><div class="card-label">Need Action</div><div class="card-val" style="color:var(--red)">${critN}</div></div>
+    <div class="card"><div class="card-accent" style="background:var(--amber)"></div><div class="card-label">Avg Gap</div><div class="card-val" style="color:var(--amber);font-size:24px">${(avgGap>0?'+':'')+avgGap.toFixed(1)}%</div></div>
+    <div class="card"><div class="card-accent" style="background:var(--green)"></div><div class="card-label">Buy Box</div><div class="card-val" style="color:var(--green)">${watched.filter(p=>p.buybox).length}/${watched.length}</div></div>`;
+  $('watchlist-table').innerHTML=watched.map(p=>`<div class="tbl-row" style="grid-template-columns:2fr 100px 100px 100px 80px 90px 100px" onclick="showProductDetail('${p.asin}')"><div class="tc" style="flex-direction:column;align-items:flex-start;gap:2px"><span style="font-weight:700">${p.img} ${(p.name||p.asin).slice(0,38)}</span><span class="mono" style="font-size:10px;color:var(--text-3)">${p.asin} · ${p.brand||p.cat}</span></div><div class="tc mono" style="font-weight:700">${fmt(p.price)}</div><div class="tc mono" style="color:var(--red)">${p.compLow>0?fmt(p.compLow):'—'}</div><div class="tc mono">${p.compAvg>0?fmt(p.compAvg):'—'}</div><div class="tc mono" style="font-weight:800;color:${p.gap===0?'var(--text-3)':gapColor(p.gap)}">${p.gap>0?'+':''}${p.gap}%</div><div class="tc">${urgBadge(p.urgency)}</div><div class="tc"><button class="btn" style="font-size:11px;padding:5px 10px;color:var(--red)" onclick="event.stopPropagation();toggleWatch('${p.asin}')">Unwatch</button></div></div>`).join('');
+}
+
+// ── OPPORTUNITIES ─────────────────────────────────────────────────────
+function renderOpportunities() {
+  const FP=getFilteredProducts();
+  if(!FP.length){['opp-stat-cards','opp-drops','opp-raises'].forEach(id=>{if($(id))$(id).innerHTML='<div class="empty"><div class="empty-icon">⚡</div><div class="empty-label">No data yet</div></div>';});return;}
+  const drops=[...FP].filter(p=>p.gap<-2&&p.compLow>0).sort((a,b)=>a.gap-b.gap).slice(0,8);
+  const raises=[...FP].filter(p=>p.gap>5&&p.compAvg>0).sort((a,b)=>b.gap-a.gap).slice(0,8);
+  const oosOpps=FP.flatMap(p=>(p.compOffers||[]).filter(c=>c.stock==='oos'||(!c.stock&&c.reviews<100)).map(c=>({...c,myProduct:p}))).slice(0,6);
+  const potentialRevenue=raises.reduce((a,p)=>{const raiseTo=Math.min(p.compAvg||p.price,p.compHigh||p.price*1.1);return a+(raiseTo-p.price);},0);
+  $('opp-stat-cards').innerHTML=`
+    <div class="card"><div class="card-accent" style="background:var(--red)"></div><div class="card-label">Price Drop Risks</div><div class="card-val" style="color:var(--red)">${drops.length}</div><div class="card-sub">You're above comp low</div></div>
+    <div class="card"><div class="card-accent" style="background:var(--green)"></div><div class="card-label">Raise Opportunities</div><div class="card-val" style="color:var(--green)">${raises.length}</div><div class="card-sub">Room to increase price</div></div>
+    <div class="card"><div class="card-accent" style="background:var(--cyan)"></div><div class="card-label">Potential Upside</div><div class="card-val" style="color:var(--cyan);font-size:22px">${potentialRevenue>0?'$'+potentialRevenue.toFixed(2):'—'}</div><div class="card-sub">If raises applied</div></div>`;
+  if(chartOppGap){chartOppGap.destroy();chartOppGap=null;}
+  const c=getChartColors();
+  const chartProds=[...FP].filter(p=>p.compLow>0||p.compAvg>0).slice(0,12);
+  if(chartProds.length&&$('opp-gap-chart')){
+    chartOppGap=new Chart($('opp-gap-chart').getContext('2d'),{type:'bar',data:{labels:chartProds.map(p=>(p.name||p.asin).slice(0,14)),datasets:[{label:'My Price',data:chartProds.map(p=>p.price||null),backgroundColor:'rgba(59,130,246,.8)',borderRadius:4},{label:'Comp Low',data:chartProds.map(p=>p.compLow||null),backgroundColor:'rgba(239,68,68,.65)',borderRadius:4},{label:'Comp Avg',data:chartProds.map(p=>p.compAvg||null),backgroundColor:'rgba(6,182,212,.55)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{labels:{color:c.legend,font:{family:'Inter',size:11},boxWidth:10,padding:12}},tooltip:{callbacks:{label:ctx=>' $'+(ctx.parsed.y||0).toFixed(2)}}},scales:{x:{grid:{color:c.grid},ticks:{color:c.tick,font:{size:10}}},y:{grid:{color:c.grid},ticks:{color:c.tick,font:{size:10},callback:v=>'$'+v}}}}});
+  }
+  const rs='grid-template-columns:2fr 90px 90px 70px';
+  $('opp-drops').innerHTML=drops.length?`<div class="tbl-hdr" style="${rs}"><div class="th">Product</div><div class="th">My $</div><div class="th">Comp Low</div><div class="th">Gap</div></div>`+drops.map(p=>`<div class="tbl-row" style="${rs}" onclick="showProductDetail('${p.asin}')"><div class="tc" style="flex-direction:column;align-items:flex-start;gap:2px"><span style="font-weight:600">${p.img} ${(p.name||p.asin).slice(0,35)}</span><span class="mono" style="font-size:10px;color:var(--text-3)">${p.asin}</span></div><div class="tc mono" style="font-weight:700">${fmt(p.price)}</div><div class="tc mono" style="color:var(--red);font-weight:700">${fmt(p.compLow)}</div><div class="tc mono" style="font-weight:800;color:var(--red)">${p.gap}%</div></div>`).join(''):'<div class="empty"><div class="empty-icon">✅</div><div class="empty-label">No drop risks</div></div>';
+  $('opp-raises').innerHTML=raises.length?`<div class="tbl-hdr" style="${rs}"><div class="th">Product</div><div class="th">My $</div><div class="th">Comp Avg</div><div class="th">Upside</div></div>`+raises.map(p=>`<div class="tbl-row" style="${rs}" onclick="showProductDetail('${p.asin}')"><div class="tc" style="flex-direction:column;align-items:flex-start;gap:2px"><span style="font-weight:600">${p.img} ${(p.name||p.asin).slice(0,35)}</span><span class="mono" style="font-size:10px;color:var(--text-3)">${p.asin}</span></div><div class="tc mono" style="font-weight:700">${fmt(p.price)}</div><div class="tc mono" style="color:var(--green);font-weight:700">${fmt(p.compAvg)}</div><div class="tc mono" style="font-weight:800;color:var(--green)">+${p.gap}%</div></div>`).join(''):'<div class="empty"><div class="empty-icon">📈</div><div class="empty-label">No raise signals detected</div></div>';
+  $('opp-oos-section').innerHTML=oosOpps.length?`<div class="tbl-wrap"><div class="tbl-hdr" style="grid-template-columns:2.5fr 90px 90px 90px"><div class="th">Competitor</div><div class="th">Their Price</div><div class="th">Your Product</div><div class="th">Your Price</div></div>`+oosOpps.map(c=>`<div class="tbl-row" style="grid-template-columns:2.5fr 90px 90px 90px"><div class="tc" style="flex-direction:column;align-items:flex-start;gap:2px"><span style="font-weight:600">${(c.name||'Competitor').slice(0,50)}</span><span class="badge b-red" style="font-size:9px;margin-top:2px">OOS / Low reviews</span></div><div class="tc mono" style="color:var(--text-3);text-decoration:line-through">${fmt(c.price)}</div><div class="tc" style="font-size:12px;font-weight:600">${c.myProduct.img} ${(c.myProduct.name||c.myProduct.asin).slice(0,25)}</div><div class="tc mono" style="color:var(--green);font-weight:800">${fmt(c.myProduct.price)}</div></div>`).join('')+'</div>':'<div class="empty"><div class="empty-icon">🔍</div><div class="empty-label">No competitor OOS signals found</div></div>';
+}
+
+// ── DATA EXPLORER ─────────────────────────────────────────────────────
+function renderExplorer() {
+  const q=($('explorer-search')?.value||'').toLowerCase();
+  const sort=$('explorer-sort')?.value||'name';
+  const filter=$('explorer-filter')?.value||'all';
+  let prods=[...getFilteredProducts()];
+  if(q) prods=prods.filter(p=>(p.name||'').toLowerCase().includes(q)||p.asin.toLowerCase().includes(q)||(p.brand||'').toLowerCase().includes(q)||(p.cat||'').toLowerCase().includes(q));
+  if(filter==='in_stock') prods=prods.filter(p=>p.stock==='in'||p.stock==='low');
+  else if(filter==='oos') prods=prods.filter(p=>p.stock==='oos');
+  else if(filter==='buybox') prods=prods.filter(p=>p.buybox);
+  else if(filter==='no_buybox') prods=prods.filter(p=>!p.buybox);
+  else if(filter==='has_cost') prods=prods.filter(p=>p.cost>0);
+  const getMargin=p=>p.cost>0&&p.price>0?((p.price-p.cost)/p.price*100):-Infinity;
+  if(sort==='price') prods.sort((a,b)=>b.price-a.price);
+  else if(sort==='gap') prods.sort((a,b)=>b.gap-a.gap);
+  else if(sort==='compLow') prods.sort((a,b)=>b.compLow-a.compLow);
+  else if(sort==='rating') prods.sort((a,b)=>(b.rating||0)-(a.rating||0));
+  else if(sort==='review_count') prods.sort((a,b)=>(b.review_count||0)-(a.review_count||0));
+  else if(sort==='margin') prods.sort((a,b)=>getMargin(b)-getMargin(a));
+  else prods.sort((a,b)=>(a.name||a.asin).localeCompare(b.name||b.asin));
+  $('explorer-sub').textContent=prods.length+' of '+PRODUCTS.length+' products';
+  $('explorer-table').innerHTML=prods.length?prods.map(p=>{
+    const margin=p.cost>0&&p.price>0?((p.price-p.cost)/p.price*100).toFixed(1):null;
+    return `<div class="tbl-row" style="grid-template-columns:2.5fr 90px 90px 90px 80px 70px 80px 80px 70px" onclick="showProductDetail('${p.asin}')"><div class="tc" style="flex-direction:column;align-items:flex-start;gap:2px"><span style="font-weight:700">${p.img} ${(p.name||p.asin).slice(0,40)}</span><div style="display:flex;gap:6px;flex-wrap:wrap"><span class="mono" style="font-size:10px;color:var(--text-3)">${p.asin}</span>${p.brand?'<span style="font-size:10px;color:var(--blue);font-weight:600">'+p.brand+'</span>':''}<span style="font-size:10px;color:var(--text-3)">${p.cat}</span></div></div><div class="tc mono" style="font-weight:700">${fmt(p.price)}</div><div class="tc mono" style="color:var(--cyan)">${p.scraped_price?fmt(p.scraped_price):'—'}</div><div class="tc mono">${p.cost>0?fmt(p.cost):'—'}</div><div class="tc mono" style="font-weight:700;color:${margin&&margin>20?'var(--green)':margin?'var(--amber)':'var(--text-3)'}">${margin?margin+'%':'—'}</div><div class="tc mono" style="font-weight:800;color:${p.gap===0?'var(--text-3)':gapColor(p.gap)}">${p.gap!==0?(p.gap>0?'+':'')+p.gap+'%':'—'}</div><div class="tc" style="color:var(--amber)">${p.rating?'★ '+p.rating:'—'}</div><div class="tc mono" style="font-size:12px">${p.review_count?p.review_count.toLocaleString():'—'}</div><div class="tc">${stockBadge(p.stock)}</div></div>`;
+  }).join(''):'<div class="empty"><div class="empty-icon">🔍</div><div class="empty-label">No products match</div></div>';
+}
+function explorerExportCSV() {
+  if(!PRODUCTS.length){showToast('No data to export');return;}
+  const headers=['ASIN','Name','Brand','Category','My Price','Scraped Price','Cost','Floor','MAP','Comp Low','Comp High','Comp Avg','Gap %','Margin %','Stock','Buy Box','Rating','Reviews','Urgency','Last Scraped'];
+  const rows=PRODUCTS.map(p=>{const margin=p.cost>0&&p.price>0?((p.price-p.cost)/p.price*100).toFixed(1):'';return[p.asin,(p.name||'').replace(/,/g,' '),p.brand||'',p.cat||'',p.price,p.scraped_price||'',p.cost||'',p.floor||'',p.map||'',p.compLow||'',p.compHigh||'',p.compAvg||'',p.gap,margin,p.stock,p.buybox?'Yes':'No',p.rating||'',p.review_count||'',p.urgency,p.last_scraped||''].join(',');});
+  const csv=[headers.join(','),...rows].join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='priceiq_export_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+  showToast('CSV exported ✓');
+}
+function showProductDetail(asin) {
+  const p = PRODUCTS.find(x => x.asin === asin);
+  if (!p) { showToast('Product not found'); return; }
+
+  const offersHtml = p.compOffers && p.compOffers.length
+    ? p.compOffers.slice(0, 8).map(o => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+        <div>
+          <div style="font-size:12.5px;font-weight:600;color:var(--text-1)">${(o.name || 'Competitor').slice(0, 50)}</div>
+          <div style="font-size:11px;color:var(--text-3)">${o.asin || ''} ${o.rating ? '★' + o.rating : ''} ${o.reviews ? '· ' + o.reviews.toLocaleString() + ' reviews' : ''}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="mono" style="font-size:14px;font-weight:800;color:${o.price < p.price ? 'var(--red)' : 'var(--green)'}">$${o.price.toFixed(2)}</div>
+          ${o.is_cheaper ? '<div style="font-size:9px;color:var(--red)">CHEAPER</div>' : '<div style="font-size:9px;color:var(--green)">HIGHER</div>'}
+          ${o.url ? `<a href="${o.url}" target="_blank" style="font-size:10px;color:var(--blue);text-decoration:none;font-weight:600">View ↗</a>` : ''}
+        </div>
+      </div>`).join('')
+    : '<div style="color:var(--text-3);font-size:12.5px;padding:10px 0;font-style:italic">No competitors scraped yet</div>';
+
+  const margin = p.cost > 0 && p.price > 0 ? ((p.price - p.cost) / p.price * 100).toFixed(1) : null;
+  const mapOk  = p.map > 0 && p.scraped_price > 0 ? p.scraped_price >= p.map : null;
+  const imgHtml = p.images && p.images.length
+    ? `<img src="${p.images[0]}" alt="" style="width:80px;height:80px;object-fit:contain;border-radius:8px;border:1px solid var(--border);flex-shrink:0" onerror="this.style.display='none'">`
+    : `<div style="width:80px;height:80px;background:var(--surface-3);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0">${p.img}</div>`;
+
+  $('detail-title').textContent = (p.name || p.asin).slice(0, 50);
+  $('detail-body').innerHTML = `
+    <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:16px">
+      ${imgHtml}
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:700;color:var(--text-1);margin-bottom:4px;line-height:1.4">${p.name || p.asin}</div>
+        <div style="font-size:12px;color:var(--text-3);margin-bottom:8px">${p.brand ? p.brand + ' · ' : ''}${p.cat}${p.asin_confirmed ? ' · <span class="mono">' + p.asin_confirmed + '</span>' : ''}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${stockBadge(p.stock)} ${urgBadge(p.urgency)}
+          <span class="badge ${p.buybox ? 'b-green' : 'b-red'}">${p.buybox ? '✓ Buy Box' : '✗ No Buy Box'}</span>
+          ${p.buybox_seller && !p.buybox ? '<span class="badge b-gray">' + p.buybox_seller + '</span>' : ''}
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">
+      <div style="background:var(--surface-2);border-radius:8px;padding:10px;text-align:center">
+        <div class="form-label" style="margin-bottom:4px">Amazon Price</div>
+        <div class="mono" style="font-size:17px;font-weight:800;color:var(--cyan)">${p.scraped_price ? '$' + p.scraped_price.toFixed(2) : '—'}</div>
+      </div>
+      <div style="background:var(--surface-2);border-radius:8px;padding:10px;text-align:center">
+        <div class="form-label" style="margin-bottom:4px">My Price</div>
+        <div class="mono" style="font-size:17px;font-weight:800;color:var(--blue)">${p.price > 0 ? '$' + p.price.toFixed(2) : '—'}</div>
+      </div>
+      <div style="background:var(--surface-2);border-radius:8px;padding:10px;text-align:center">
+        <div class="form-label" style="margin-bottom:4px">Gap</div>
+        <div class="mono" style="font-size:17px;font-weight:800;color:${p.gap === 0 ? 'var(--text-3)' : gapColor(p.gap)}">${p.gap > 0 ? '+' : ''}${p.gap}%</div>
+      </div>
+      <div style="background:var(--surface-2);border-radius:8px;padding:10px;text-align:center">
+        <div class="form-label" style="margin-bottom:4px">Margin</div>
+        <div class="mono" style="font-size:17px;font-weight:800;color:${margin && margin > 20 ? 'var(--green)' : 'var(--amber)'}">${margin ? margin + '%' : '—'}</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">
+      <div style="background:var(--surface-3);border-radius:7px;padding:8px;text-align:center">
+        <div style="font-size:10px;color:var(--text-3);font-weight:700;margin-bottom:3px">COST</div>
+        <div class="mono" style="font-size:13px;font-weight:700">${p.cost > 0 ? '$' + p.cost.toFixed(2) : '—'}</div>
+      </div>
+      <div style="background:var(--surface-3);border-radius:7px;padding:8px;text-align:center">
+        <div style="font-size:10px;color:var(--text-3);font-weight:700;margin-bottom:3px">FLOOR</div>
+        <div class="mono" style="font-size:13px;font-weight:700">${p.floor > 0 ? '$' + p.floor.toFixed(2) : '—'}</div>
+      </div>
+      <div style="background:var(--surface-3);border-radius:7px;padding:8px;text-align:center">
+        <div style="font-size:10px;color:var(--text-3);font-weight:700;margin-bottom:3px">MAP</div>
+        <div class="mono" style="font-size:13px;font-weight:700">${p.map > 0 ? '$' + p.map.toFixed(2) : '—'}</div>
+      </div>
+      <div style="background:var(--surface-3);border-radius:7px;padding:8px;text-align:center">
+        <div style="font-size:10px;color:var(--text-3);font-weight:700;margin-bottom:3px">MAP STATUS</div>
+        <div style="font-size:11px;font-weight:700;color:${mapOk === null ? 'var(--text-3)' : mapOk ? 'var(--green)' : 'var(--red)'}">${mapOk === null ? '—' : mapOk ? '✓ OK' : '⚠ BELOW'}</div>
+      </div>
+    </div>
+
+    ${p.rating ? `<div style="background:var(--surface-2);border-radius:8px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:14px">
+      <span style="font-size:22px;color:var(--amber);font-weight:800">★ ${p.rating}</span>
+      <span style="font-size:13px;color:var(--text-2)">${p.review_count ? p.review_count.toLocaleString() + ' reviews' : ''}</span>
+      <span style="font-size:12px;color:var(--text-3)">${p.sellers > 0 ? p.sellers + ' sellers' : ''}</span>
+    </div>` : ''}
+
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-3);margin-bottom:8px">
+        Competitors from Amazon Search — ${p.compOffers ? p.compOffers.length : 0} found
+        ${p.compLow > 0 ? ' · Low: $' + p.compLow.toFixed(2) + ' · High: $' + p.compHigh.toFixed(2) + ' · Avg: $' + p.compAvg.toFixed(2) : ''}
+      </div>
+      ${offersHtml}
+    </div>
+
+    ${p.bullets && p.bullets.length ? `<div style="margin-bottom:14px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-3);margin-bottom:8px">Product Highlights</div>
+      <ul style="padding-left:18px;display:flex;flex-direction:column;gap:5px">
+        ${p.bullets.map(b => '<li style="font-size:12.5px;color:var(--text-2);line-height:1.5">' + b + '</li>').join('')}
+      </ul>
+    </div>` : ''}
+
+    ${p.description ? `<div style="margin-bottom:14px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-3);margin-bottom:6px">Description</div>
+      <div style="font-size:12.5px;color:var(--text-2);line-height:1.6;background:var(--surface-2);border-radius:8px;padding:10px 14px">${p.description.slice(0, 400)}${p.description.length > 400 ? '…' : ''}</div>
+    </div>` : ''}
+
+    ${p.images && p.images.length > 1 ? `<div style="margin-bottom:14px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-3);margin-bottom:8px">Images (${p.images.length})</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${p.images.slice(0, 6).map(url => '<img src="' + url + '" alt="" style="width:56px;height:56px;object-fit:contain;border-radius:6px;border:1px solid var(--border)" onerror="this.style.display=\'none\'">').join('')}
+      </div>
+    </div>` : ''}
+
+    ${p.last_scraped ? `<div style="font-size:11px;color:var(--text-3);text-align:right;padding-top:6px;border-top:1px solid var(--border)">
+      Last scraped: ${timeSince(p.last_scraped)} · Status: ${p.scrape_status}
+    </div>` : ''}`;
+
+  openModal('product-detail-modal');
+}
+
+// ── COMP MODE SELECTOR ────────────────────────────────────────────────
+let selectedCompMode = 'brand';
+function selectCompMode(mode) {
+  selectedCompMode = mode;
+  ['brand','reseller','both'].forEach(m => {
+    const el = $('cm-' + m);
+    if (el) el.classList.toggle('on', m === mode);
+  });
+}
+
+// ── ADD & SCRAPE ──────────────────────────────────────────────────────
+async function addAndScrape() {
+  const raw = ($('inp-asin')?.value || '').trim();
+  if (!raw) { showToast('Enter an ASIN'); return; }
+  let asin = raw.includes('amazon.com') ? (raw.match(/\/dp\/([A-Z0-9]{10})/i)||[])[1] : raw.toUpperCase();
+  if (!asin || asin.length !== 10) { showToast('Invalid ASIN — must be 10 characters'); return; }
+
+  const myP   = parseFloat($('inp-myprice')?.value) || 0;
+  const cost  = parseFloat($('inp-cost')?.value)    || 0;
+  const floor = parseFloat($('inp-floor')?.value)   || 0;
+  const map   = parseFloat($('inp-map')?.value)     || 0;
+
+  // Show progress panel
+  $('scrape-progress').style.display = 'block';
+  $('scrape-log').innerHTML = '';
+  $('scrape-progress-title').textContent = `🔄 Scraping ${asin} (${selectedCompMode} mode)…`;
+  $('btn-scrape-now').disabled = true;
+  $('btn-scrape-now').textContent = '⏳ Running…';
+
+  try {
+    // Kick off scrape job
+    const startResp = await fetch('http://localhost:3000/api/scrape', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ asin, my_price: myP, cost, floor, map, comp_mode: selectedCompMode })
+    });
+    if (!startResp.ok) throw new Error('Server error — is server.js running?');
+    const { jobId } = await startResp.json();
+
+    // Poll job until done
+    await pollJob(jobId);
+
+    // Reload data but keep modal open for adding more
+    await loadScrapedData();
+    showToast(`✓ ${asin} scraped successfully`);
+
+    // Reset form for next product but keep modal open
+    $('scrape-progress').style.display = 'none';
+    $('scrape-log').innerHTML = '';
+    $('scrape-progress-title').textContent = '🔄 Scraping in progress…';
+    $('btn-scrape-now').disabled = false;
+    $('btn-scrape-now').textContent = '▶ Scrape Now';
+    ['inp-asin','inp-myprice','inp-cost','inp-floor','inp-map'].forEach(id => { if ($(id)) $(id).value = ''; });
+
+    // Update running products list inside modal
+    const listEl = $('modal-products-list');
+    const itemsEl = $('modal-products-items');
+    if (listEl && itemsEl) {
+      listEl.style.display = 'block';
+      itemsEl.innerHTML = PRODUCTS.map(p => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--surface-2);border-radius:7px;margin-bottom:5px;font-size:12.5px">
+          <div>
+            <span style="font-weight:600">${p.img} ${(p.name||p.asin).slice(0,40)}</span>
+            <span class="mono" style="font-size:10px;color:var(--text-3);margin-left:8px">${p.asin}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="color:var(--green);font-weight:700">${p.compOffers?.length||0} comps</span>
+            <span class="badge b-green" style="font-size:9px">✓ Done</span>
+          </div>
+        </div>`).join('');
+    }
+
+    // Focus ASIN input for next product
+    setTimeout(() => $('inp-asin')?.focus(), 100);
+
+  } catch (e) {
+    $('scrape-progress-title').textContent = `✗ Error: ${e.message}`;
+    appendLog('ERROR: ' + e.message);
+    $('btn-scrape-now').disabled = false;
+    $('btn-scrape-now').textContent = '▶ Scrape Now';
+  }
+}
+
+function appendLog(line) {
+  const el = $('scrape-log');
+  if (!el) return;
+  el.innerHTML += `<div>${line}</div>`;
+  el.scrollTop = el.scrollHeight;
+}
+
+async function pollJob(jobId) {
+  return new Promise((resolve, reject) => {
+    const interval = setInterval(async () => {
+      try {
+        const r = await fetch(`http://localhost:3000/api/jobs/${jobId}`);
+        const job = await r.json();
+        // Show new log lines
+        const logEl = $('scrape-log');
+        if (logEl) {
+          logEl.innerHTML = job.log.map(l => `<div style="color:${l.startsWith('ERR')?'var(--red)':'inherit'}">${l}</div>`).join('');
+          logEl.scrollTop = logEl.scrollHeight;
+        }
+        if (job.status === 'done') {
+          clearInterval(interval);
+          $('scrape-progress-title').textContent = `✅ Scrape complete!`;
+          resolve();
+        } else if (job.status === 'failed') {
+          clearInterval(interval);
+          $('scrape-progress-title').textContent = `✗ Scrape failed`;
+          reject(new Error(job.error || 'Scrape failed'));
+        }
+      } catch (e) {
+        clearInterval(interval);
+        reject(e);
+      }
+    }, 1500);
+  });
+}
+
+function resetScrapeModal() {
+  $('scrape-progress').style.display = 'none';
+  $('scrape-log').innerHTML = '';
+  $('scrape-progress-title').textContent = '🔄 Scraping in progress…';
+  $('btn-scrape-now').disabled = false;
+  $('btn-scrape-now').textContent = '▶ Scrape Now';
+  ['inp-asin','inp-myprice','inp-cost','inp-floor','inp-map'].forEach(id => { if ($(id)) $(id).value = ''; });
+  const listEl = $('modal-products-list');
+  const itemsEl = $('modal-products-items');
+  if (listEl) listEl.style.display = 'none';
+  if (itemsEl) itemsEl.innerHTML = '';
+  selectCompMode('brand');
+}
+
+// ── RUN SCRAPE (topbar reload button) ─────────────────────────────────
+async function runScrape() {
+  showToast('🔄 Reloading data from server…');
+  const btns = document.querySelectorAll('[onclick*="runScrape"]');
+  btns.forEach(b => { b.textContent = '⏳ Loading…'; b.disabled = true; });
+  const loaded = await loadScrapedData();
+  if (!loaded) showToast('No data yet — add a product and scrape it');
+  btns.forEach(b => { b.textContent = b.id === 'topbar-scrape' ? '▶ Reload Data' : '▶ Reload JSON'; b.disabled = false; });
+}
+// ── DELETE PRODUCT ────────────────────────────────────────────────────
+async function deleteProduct(asin) {
+  if (!confirm(`Remove ${asin} from your dashboard?`)) return;
+  try {
+    const r = await fetch(`http://localhost:3000/api/data/${asin}`, { method: 'DELETE' });
+    if (!r.ok) throw new Error('Server error');
+  } catch (e) {
+    // continue — remove from local state regardless
+  }
+  const idx = PRODUCTS.findIndex(p => p.asin === asin);
+  if (idx > -1) PRODUCTS.splice(idx, 1);
+  WATCHLIST.delete(asin);
+  renderAll();
+  showToast(`Removed ${asin}`);
+}
+
+function saveRule() {
+  const name = $('rule-name')?.value?.trim();
+  if (!name) { showToast('Enter a rule name'); return; }
+  RULES.push({ name, cond: $('rule-cond')?.value, action: $('rule-action')?.value, apply: $('rule-apply')?.value, exec: $('rule-exec')?.value });
+  closeModal('rule-modal');
+  if ($('rule-name')) $('rule-name').value = '';
+  renderPricing();
+  showToast('Rule saved: ' + name);
+}
+function deleteRule(i) { RULES.splice(i, 1); renderPricing(); showToast('Rule removed'); }
+
+// ── RUN SCRAPE ────────────────────────────────────────────────────────
+async function runScrape() {
+  showToast('🔄 Reloading scraped_data.json…');
+  const btns = document.querySelectorAll('[onclick*="runScrape"]');
+  btns.forEach(b => { b.textContent = '⏳ Loading…'; b.disabled = true; });
+  const loaded = await loadScrapedData();
+  if (!loaded) showToast('No scraped_data.json found — run: python scraper.py');
+  btns.forEach(b => { b.textContent = b.id === 'topbar-scrape' ? '▶ Run Scrape' : '▶ Reload JSON'; b.disabled = false; });
+}
+
+// ── MISC ──────────────────────────────────────────────────────────────
+function showToast(msg) { const t = $('toast'); $('toast-msg').textContent = msg; t.style.transform = 'translateY(0)'; t.style.opacity = '1'; setTimeout(() => { t.style.transform = 'translateY(80px)'; t.style.opacity = '0'; }, 3500); }
+function openModal(id)  { $(id).classList.add('on'); }
+function closeModal(id) { $(id).classList.remove('on'); }
+function revealKey()    { const el = $('api-key-display'); el.textContent = el.textContent.includes('••') ? 'fUG5oU4zytxScq4VW7pH' : 'fUG5oU4z••••••••'; }
+
+// Wire up modal input listeners for live command preview
+document.addEventListener('DOMContentLoaded', () => {
+  ['inp-asin','inp-myprice','inp-cost','inp-floor','inp-map'].forEach(id => {
+    const el = $(id);
+    if (el) el.addEventListener('input', updateModalCmd);
+  });
+});
+
+// ── INIT ──────────────────────────────────────────────────────────────
+renderEmpty();
+loadScrapedData();
+</script>
+</body>
+</html>
