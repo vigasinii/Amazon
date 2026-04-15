@@ -11,6 +11,27 @@ const SCHEDULE_FILE = path.join(__dirname, 'schedule.json');
 
 app.use(cors());
 app.use(express.json());
+
+// ── Basic Auth ────────────────────────────────────────────────────────
+const AUTH_USER = process.env.DASHBOARD_USER || 'admin';
+const AUTH_PASS = process.env.DASHBOARD_PASS || 'priceiq123';
+
+app.use((req, res, next) => {
+  // Allow API calls without auth if you want (optional — remove this block to lock API too)
+  const authHeader = req.headers['authorization'];
+  if (!authHeader || !authHeader.startsWith('Basic ')) {
+    res.setHeader('WWW-Authenticate', 'Basic realm="PriceIQ"');
+    return res.status(401).send('Authentication required');
+  }
+  const base64 = authHeader.slice(6);
+  const [user, pass] = Buffer.from(base64, 'base64').toString().split(':');
+  if (user !== AUTH_USER || pass !== AUTH_PASS) {
+    res.setHeader('WWW-Authenticate', 'Basic realm="PriceIQ"');
+    return res.status(401).send('Invalid credentials');
+  }
+  next();
+});
+
 app.use(express.static(__dirname));
 
 // Redirect root to dashboard
@@ -225,12 +246,6 @@ app.delete('/api/data', (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-app.listen(PORT, () => {
-  console.log(`\n  ✅ PriceIQ server running at http://localhost:${PORT}`);
-  console.log(`  📄 Open http://localhost:${PORT}/dashboard.html`);
-  console.log(`  🔌 API at http://localhost:${PORT}/api/\n`);
-});
-
 
 // ── GET /api/data ── serve scraped_data.json ─────────────────────────
 app.get('/api/data', (req, res) => {
@@ -345,8 +360,7 @@ app.delete('/api/data', (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`\n  ✅ PriceIQ server running at http://localhost:${PORT}`);
-  console.log(`  📄 Open http://localhost:${PORT}/dashboard.html`);
-  console.log(`  🔌 API at http://localhost:${PORT}/api/\n`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`\n  ✅ PriceIQ server running on port ${PORT}`);
+  console.log(`  📄 Dashboard: http://localhost:${PORT}/dashboard.html\n`);
 });
